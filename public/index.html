@@ -1,0 +1,965 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <title>CityBus Transport</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- ===== TOAST CONTAINER ===== -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- ===== MODAL ===== -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h2 id="modalTitle">Title</h2>
+    <p id="modalBody">Body</p>
+    <div id="modalFooter"></div>
+  </div>
+</div>
+
+<!-- ============================== -->
+<!--   PAGE: LANDING               -->
+<!-- ============================== -->
+<div class="page active" id="page-landing">
+  <nav class="topnav">
+    <div class="brand" onclick="goto('landing')">
+      <div class="brand-icon">🚌</div>
+      <span style="font-family:var(--font-head);font-weight:800;">CityBus</span>
+    </div>
+    <div class="nav-links">
+      <button class="nav-link" onclick="goto('user-login')">Login</button>
+      <button class="btn btn-primary btn-sm" onclick="goto('register')">Sign Up</button>
+      <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle theme">🌙</button>
+    </div>
+  </nav>
+
+  <div class="hero">
+    <section>
+      <div class="eyebrow">CityBus Transport</div>
+      <h1>Book Your CityBus Seat Online — Fast &amp; Contactless</h1>
+      <p>Modern public transportation for Metro Manila. Reserve your seat in seconds with secure QR ticketing and dashboard control.</p>
+      <div class="hero-actions">
+        <button class="btn btn-primary btn-lg" onclick="goto('register')">🎫 Book Now</button>
+        <button class="btn btn-ghost btn-lg" onclick="goto('user-login')">Login</button>
+      </div>
+    </section>
+    <section>
+      <div class="hero-card">
+        <h2>Fast booking.<br>Secure boarding.</h2>
+        <p>Choose a route, reserve a seat, and complete payment with GCash, Maya, or card. Your QR ticket is ready instantly.</p>
+      </div>
+    </section>
+  </div>
+
+  <div class="features">
+    <h2>Why Choose CityBus?</h2>
+    <div class="feature-grid">
+      <article class="feature-card">
+        <div class="feature-icon fi-bus">🚌</div>
+        <h3>Modern Fleet</h3>
+        <p>Brand new buses with air conditioning and comfortable seating.</p>
+      </article>
+      <article class="feature-card">
+        <div class="feature-icon fi-clock">⏰</div>
+        <h3>On-Time Service</h3>
+        <p>Real-time tracking and scheduled departures you can rely on.</p>
+      </article>
+      <article class="feature-card">
+        <div class="feature-icon fi-lock">🔒</div>
+        <h3>Safe &amp; Secure</h3>
+        <p>Contactless payments and verified drivers for your safety.</p>
+      </article>
+      <article class="feature-card">
+        <div class="feature-icon fi-ticket">🎫</div>
+        <h3>Digital Tickets</h3>
+        <p>QR code tickets on your phone — no paper required.</p>
+      </article>
+    </div>
+  </div>
+
+  <footer class="page-footer">
+    <span>© 2026 CityBus Transport. All rights reserved.</span>
+    <button class="btn btn-ghost btn-sm" onclick="goto('employee-login')">Employee Portal →</button>
+  </footer>
+</div>
+
+<!-- ============================== -->
+<!--   PAGE: USER LOGIN             -->
+<!-- ============================== -->
+<div class="page" id="page-user-login">
+  <div class="auth-shell">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <div class="brand-icon">🚌</div>
+        <span>CityBus</span>
+      </div>
+      <div style="position:absolute;top:20px;right:20px;">
+        <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">🌙</button>
+      </div>
+      <h1>Passenger Login</h1>
+      <p>Access your passenger portal, review bookings, and complete payments securely.</p>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-input" type="email" id="loginEmail" placeholder="juandelacruz@gmail.com" value="juan@example.com"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-input" type="password" id="loginPassword" placeholder="••••••••" value="password123"/>
+      </div>
+      <button class="btn btn-primary btn-block mt-2" onclick="doLogin()" style="min-height:50px;">Login</button>
+      <p class="auth-note">New user? <a onclick="goto('register')">Sign Up</a> · <a onclick="goto('employee-login')">Employee Portal</a></p>
+      <p class="auth-note mt-1"><a onclick="goto('landing')">← Back to Home</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- ============================== -->
+<!--   PAGE: REGISTER               -->
+<!-- ============================== -->
+<div class="page" id="page-register">
+  <div class="auth-shell">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <div class="brand-icon">🚌</div>
+        <span>CityBus</span>
+      </div>
+      <div style="position:absolute;top:20px;right:20px;">
+        <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">🌙</button>
+      </div>
+      <h1>Create Account</h1>
+      <p>Sign up to start booking seats instantly.</p>
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <input class="form-input" type="text" id="regName" placeholder="Juan Dela Cruz"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-input" type="email" id="regEmail" placeholder="juandelacruz@gmail.com"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Phone Number</label>
+        <input class="form-input" type="tel" id="regPhone" placeholder="09XX XXX XXXX"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-input" type="password" id="regPassword" placeholder="Create a strong password"/>
+      </div>
+      <button class="btn btn-primary btn-block mt-2" onclick="doRegister()" style="min-height:50px;">Create Account</button>
+      <p class="auth-note">Already have an account? <a onclick="goto('user-login')">Sign In</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- ============================== -->
+<!--   PAGE: EMPLOYEE LOGIN         -->
+<!-- ============================== -->
+<div class="page" id="page-employee-login">
+  <div class="auth-shell">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <div class="brand-icon">🚌</div>
+        <span>CityBus</span>
+      </div>
+      <div style="position:absolute;top:20px;right:20px;">
+        <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">🌙</button>
+      </div>
+      <h1>Employee Portal</h1>
+      <p>Sign in to your CityBus employee account. Access dashboards for operators, finance, and admin.</p>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-input" type="email" id="empEmail" placeholder="employee@citybus.com" value="admin@citybus.com"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-input" type="password" id="empPassword" placeholder="••••••••" value="admin123"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Role</label>
+        <select class="form-input" id="empRole">
+          <option value="admin">Admin</option>
+          <option value="finance">Finance</option>
+          <option value="operator">Bus Operator</option>
+        </select>
+      </div>
+      <button class="btn btn-accent btn-block mt-2" onclick="doEmpLogin()" style="min-height:50px;">Sign In</button>
+      <p class="auth-note"><a onclick="goto('user-login')">← Passenger Login</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- ============================== -->
+<!--   PAGE: USER DASHBOARD         -->
+<!-- ============================== -->
+<div class="page" id="page-user-dashboard">
+  <nav class="topnav">
+    <div class="brand" onclick="goto('user-dashboard')">
+      <div class="brand-icon">🚌</div>
+      <span style="font-family:var(--font-head);font-weight:800;">CityBus</span>
+    </div>
+    <div class="nav-links">
+      <button class="nav-link active" onclick="goto('user-dashboard')">Dashboard</button>
+      <button class="nav-link" onclick="goto('booking')">Book</button>
+      <button class="nav-link" onclick="goto('history')">History</button>
+      <button class="nav-link" onclick="goto('profile')">Profile</button>
+      <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">🌙</button>
+      <button class="btn btn-ghost btn-sm" onclick="doLogout()">Logout</button>
+    </div>
+  </nav>
+  <div class="shell">
+    <div class="page-top">
+      <div>
+        <div class="page-subtitle">Welcome back, <span id="dashUserName">Juan</span>!</div>
+        <h1 class="page-title">Your Travel Dashboard</h1>
+      </div>
+      <div class="toolbar">
+        <button class="btn btn-primary" onclick="goto('booking')">🎫 Book Now</button>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-icon">🎫</div><div class="stat-label">Upcoming Trips</div><div class="stat-value" id="statUpcoming">2</div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:var(--green);">✅</div><div class="stat-label">Completed Trips</div><div class="stat-value" id="statCompleted">5</div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:var(--primary);">💳</div><div class="stat-label">Total Spent</div><div class="stat-value" id="statSpent">₱385</div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#FFB84B;">🚌</div><div class="stat-label">Favorite Route</div><div class="stat-value" style="font-size:1.1rem;">Route 1</div></div>
+    </div>
+
+    <div class="panel-grid">
+      <div class="panel">
+        <h2>My Bookings</h2>
+        <div class="list-card" id="myBookingsList">
+          <div class="list-item">
+            <div><strong>Route 1 — Manila → Makati</strong><small>Ticket: CB1735468920 · Seat B3</small></div>
+            <span class="badge badge-blue">Upcoming</span>
+          </div>
+          <div class="list-item">
+            <div><strong>Route 2 — Quezon City → Pasig</strong><small>Ticket: CB1735568920 · Seat A1</small></div>
+            <span class="badge badge-blue">Upcoming</span>
+          </div>
+        </div>
+        <div class="form-actions mt-2">
+          <button class="btn btn-primary" onclick="goto('booking')">New Booking</button>
+        </div>
+      </div>
+      <div>
+        <div class="panel">
+          <h2>Quick Actions</h2>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <button class="btn btn-primary btn-block" onclick="goto('booking')">🎫 Book a Seat</button>
+            <button class="btn btn-ghost btn-block" onclick="goto('history')">📋 Booking History</button>
+            <button class="btn btn-ghost btn-block" onclick="goto('profile')">👤 Edit Profile</button>
+          </div>
+        </div>
+        <div class="panel">
+          <h2>Account</h2>
+          <div class="list-card">
+            <div class="list-item"><div><strong id="dashProfileName">Juan Dela Cruz</strong><small>Passenger</small></div></div>
+            <div class="list-item"><div><small id="dashProfileEmail">juandelacruz@gmail.com</small></div></div>
+            <div class="list-item"><div><small>Member since April 2026</small></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================== -->
+<!--   PAGE: BOOKING                -->
+<!-- ============================== -->
+<div class="page" id="page-booking">
+  <nav class="topnav">
+    <div class="brand" onclick="goto('user-dashboard')"><div class="brand-icon">🚌</div><span style="font-family:var(--font-head);font-weight:800;">CityBus</span></div>
+    <div class="nav-links">
+      <button class="nav-link" onclick="goto('user-dashboard')">Dashboard</button>
+      <button class="nav-link active">Book</button>
+      <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+      <button class="btn btn-ghost btn-sm" onclick="doLogout()">Logout</button>
+    </div>
+  </nav>
+  <div class="shell">
+    <div class="page-top">
+      <div><div class="page-subtitle">Step 1 of 3</div><h1 class="page-title">Book Your Seat</h1></div>
+      <div class="toolbar">
+        <button class="btn btn-ghost" onclick="goto('user-dashboard')">← Back</button>
+        <button class="btn btn-primary" id="proceedPaymentBtn" onclick="proceedToPayment()">Proceed to Payment →</button>
+      </div>
+    </div>
+
+    <div class="panel-grid">
+      <div class="panel">
+        <h2>Trip Details</h2>
+        <div class="form-group">
+          <label class="form-label">Select Route</label>
+          <select class="form-input" id="routeSelect" onchange="updateRouteInfo()">
+            <option value="1" data-price="65" data-from="Manila" data-to="Makati">Route 1: Manila → Makati (₱65)</option>
+            <option value="2" data-price="75" data-from="Quezon City" data-to="Pasig">Route 2: Quezon City → Pasig (₱75)</option>
+            <option value="3" data-price="55" data-from="Pasay" data-to="MOA">Route 3: Pasay → MOA (₱55)</option>
+            <option value="4" data-price="80" data-from="Manila" data-to="BGC">Route 4: Manila → BGC (₱80)</option>
+          </select>
+        </div>
+        <div class="trip-card mt-2 mb-2">
+          <div>
+            <div class="trip-route">
+              <span id="tripFrom">Manila</span>
+              <span class="trip-arrow">→</span>
+              <span id="tripTo">Makati</span>
+            </div>
+            <div class="trip-meta" id="tripTime2">08:00 AM · 09:15 AM</div>
+          </div>
+          <div class="trip-price" id="tripPrice">₱65</div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Date</label>
+            <input class="form-input" type="date" id="tripDate" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Departure Time</label>
+            <select class="form-input" id="tripTimeSelect">
+              <option>08:00 AM</option>
+              <option>09:30 AM</option>
+              <option>11:00 AM</option>
+              <option>01:00 PM</option>
+              <option>03:30 PM</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Passenger Name</label>
+          <input class="form-input" type="text" id="passengerName" placeholder="Juan Dela Cruz" />
+        </div>
+        <div class="form-group" id="extraPassengers"></div>
+        <button class="btn btn-ghost btn-sm" onclick="addPassenger()">+ Add Passenger</button>
+      </div>
+
+      <div class="panel">
+        <h2>Select a Seat</h2>
+        <div class="callout mb-2">
+          <p>Click on an available seat to reserve it. <strong>Selected: <span id="selectedCount">0</span> / 1</strong></p>
+        </div>
+        <div class="seat-grid" id="seatMap"></div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot ld-avail"></div>Available</div>
+          <div class="legend-item"><div class="legend-dot ld-sel"></div>Selected</div>
+          <div class="legend-item"><div class="legend-dot ld-book"></div>Booked</div>
+        </div>
+        <div class="mt-3 text-sm text-muted" id="selectedSeatInfo" style="display:none;">
+          ✅ Seat <strong id="selectedSeatLabel"></strong> selected
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================== -->
+<!--   PAGE: PAYMENT                -->
+<!-- ============================== -->
+<div class="page" id="page-payment">
+  <nav class="topnav">
+    <div class="brand" onclick="goto('user-dashboard')"><div class="brand-icon">🚌</div><span style="font-family:var(--font-head);font-weight:800;">CityBus</span></div>
+    <div class="nav-links">
+      <button class="nav-link" onclick="goto('booking')">← Back</button>
+      <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    </div>
+  </nav>
+  <div class="shell">
+    <div class="page-top">
+      <div><div class="page-subtitle">Step 2 of 3</div><h1 class="page-title">Complete Payment</h1></div>
+    </div>
+
+    <div class="steps">
+      <div class="step-card active"><h3>💳 Payment Details</h3><p>Enter method and checkout.</p></div>
+      <div class="step-card"><h3>⚙️ Processing</h3><p>Secure transaction in progress.</p></div>
+      <div class="step-card"><h3>✅ Confirmed</h3><p>Ticket issued immediately.</p></div>
+    </div>
+
+    <div class="panel-grid">
+      <div class="panel">
+        <h2>Select Payment Method</h2>
+        <div class="payment-methods" id="paymentMethods">
+          <button class="pm-btn selected" onclick="selectPM(this,'card')">💳 Card</button>
+          <button class="pm-btn" onclick="selectPM(this,'gcash')">📱 GCash</button>
+          <button class="pm-btn" onclick="selectPM(this,'maya')">🟢 Maya</button>
+        </div>
+
+        <div id="cardForm">
+          <div class="form-group">
+            <label class="form-label">Card Number</label>
+            <input class="form-input" type="text" placeholder="1234 5678 9012 3456" id="cardNumber" oninput="formatCard(this)"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Cardholder Name</label>
+            <input class="form-input" type="text" placeholder="JUAN DELA CRUZ"/>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Expiry Date</label>
+              <input class="form-input" type="text" placeholder="MM/YY"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">CVV</label>
+              <input class="form-input" type="text" placeholder="123" maxlength="3"/>
+            </div>
+          </div>
+        </div>
+
+        <div id="gcashForm" style="display:none;">
+          <div class="form-group">
+            <label class="form-label">GCash Number</label>
+            <input class="form-input" type="tel" placeholder="09XX XXX XXXX"/>
+          </div>
+        </div>
+
+        <div id="mayaForm" style="display:none;">
+          <div class="form-group">
+            <label class="form-label">Maya Account</label>
+            <input class="form-input" type="email" placeholder="your@email.com"/>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Booking Summary</h2>
+        <div class="summary-row"><span class="text-muted">Route</span><strong id="payRoute">Manila → Makati</strong></div>
+        <div class="summary-row"><span class="text-muted">Date</span><span id="payDate">—</span></div>
+        <div class="summary-row"><span class="text-muted">Time</span><span id="payTime">—</span></div>
+        <div class="summary-row"><span class="text-muted">Seat</span><span id="paySeat">—</span></div>
+        <div class="summary-row"><span class="text-muted">Passenger</span><span id="payPassenger">—</span></div>
+        <div class="divider"></div>
+        <div class="summary-row"><span class="text-muted">Total</span><span class="summary-total" id="payTotal">₱65</span></div>
+        <div class="form-actions mt-3">
+          <button class="btn btn-success btn-block" onclick="doPayment()" style="min-height:52px;font-size:1.05rem;">
+            🔒 Pay Now
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================== -->
+<!--   PAGE: CONFIRMATION           -->
+<!-- ============================== -->
+<div class="page" id="page-confirmation">
+  <nav class="topnav">
+    <div class="brand" onclick="goto('user-dashboard')"><div class="brand-icon">🚌</div><span style="font-family:var(--font-head);font-weight:800;">CityBus</span></div>
+    <div class="nav-links">
+      <button class="nav-link" onclick="goto('user-dashboard')">Dashboard</button>
+      <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    </div>
+  </nav>
+  <div class="shell">
+    <div class="page-top">
+      <div><div class="page-subtitle" style="color:var(--green);">✅ Booking Confirmed!</div><h1 class="page-title">Your CityBus Ticket is Ready</h1></div>
+    </div>
+
+    <div class="panel-grid">
+      <div class="panel ticket-card">
+        <div class="ticket-header">
+          <div>
+            <div class="eyebrow">CityBus Transport</div>
+            <h2 style="font-family:var(--font-head);font-size:1.8rem;font-weight:800;margin-top:8px;">E-Ticket</h2>
+          </div>
+          <div class="ticket-number text-right">
+            <div>Ticket Number</div>
+            <strong id="confTicketNum">CB1777621232221</strong>
+          </div>
+        </div>
+        <hr class="ticket-divider">
+        <div class="ticket-row">
+          <div><div class="ticket-label">Route</div><div class="ticket-val" id="confRoute">Manila → Makati</div></div>
+          <div><div class="ticket-label">Date</div><div class="ticket-val" id="confDate">Sun, May 10, 2026</div></div>
+          <div><div class="ticket-label">Time</div><div class="ticket-val" id="confTime">08:00 AM</div></div>
+        </div>
+        <hr class="ticket-divider">
+        <div class="ticket-row">
+          <div><div class="ticket-label">Passenger</div><div class="ticket-val" id="confPassenger">Juan Dela Cruz</div></div>
+          <div><div class="ticket-label">Seat</div><div class="ticket-val" id="confSeat">B3</div></div>
+        </div>
+        <hr class="ticket-divider">
+        <div class="ticket-row">
+          <div><div class="ticket-label">Amount Paid</div></div>
+          <div style="font-family:var(--font-head);font-size:1.8rem;font-weight:800;color:var(--green);" id="confAmount">₱65</div>
+        </div>
+        <div class="callout mt-3">
+          <h3>📋 Important Reminders</h3>
+          <ul>
+            <li>Arrive at the terminal 15 minutes before departure.</li>
+            <li>Present this QR code to the conductor when boarding.</li>
+            <li>Keep this ticket until the end of your journey.</li>
+            <li>Contact support for ticket changes or cancellations.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:20px;align-items:center;justify-content:center;">
+        <div class="panel" style="width:100%;text-align:center;">
+          <h2>Your QR Ticket</h2>
+          <div class="qr-wrap mb-3">
+            <div id="qrCode"></div>
+          </div>
+          <p class="text-muted text-sm">Scan this QR at boarding</p>
+        </div>
+        <button class="btn btn-primary btn-lg btn-block" onclick="goto('booking')">🎫 Book Another Trip</button>
+        <button class="btn btn-ghost btn-block" onclick="goto('user-dashboard')">← Dashboard</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================== -->
+<!--   PAGE: HISTORY                -->
+<!-- ============================== -->
+<div class="page" id="page-history">
+  <nav class="topnav">
+    <div class="brand" onclick="goto('user-dashboard')"><div class="brand-icon">🚌</div><span style="font-family:var(--font-head);font-weight:800;">CityBus</span></div>
+    <div class="nav-links">
+      <button class="nav-link" onclick="goto('user-dashboard')">Dashboard</button>
+      <button class="nav-link active">History</button>
+      <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+      <button class="btn btn-ghost btn-sm" onclick="doLogout()">Logout</button>
+    </div>
+  </nav>
+  <div class="shell">
+    <div class="page-top">
+      <div><div class="page-subtitle">Booking History</div><h1 class="page-title">Recent Transactions</h1></div>
+      <div class="toolbar">
+        <button class="btn btn-ghost" onclick="goto('user-dashboard')">← Back</button>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>All Trips</h2>
+      <div class="table-wrap">
+        <table id="historyTable">
+          <thead>
+            <tr>
+              <th>Ticket #</th>
+              <th>Route</th>
+              <th>Seat</th>
+              <th>Amount</th>
+              <th>Method</th>
+              <th>Date</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="historyBody">
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================== -->
+<!--   PAGE: PROFILE                -->
+<!-- ============================== -->
+<div class="page" id="page-profile">
+  <nav class="topnav">
+    <div class="brand" onclick="goto('user-dashboard')"><div class="brand-icon">🚌</div><span style="font-family:var(--font-head);font-weight:800;">CityBus</span></div>
+    <div class="nav-links">
+      <button class="nav-link" onclick="goto('user-dashboard')">Dashboard</button>
+      <button class="nav-link active">Profile</button>
+      <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+      <button class="btn btn-ghost btn-sm" onclick="doLogout()">Logout</button>
+    </div>
+  </nav>
+  <div class="shell">
+    <div class="page-top">
+      <div><div class="page-subtitle">Account Settings</div><h1 class="page-title">Your Profile</h1></div>
+    </div>
+    <div class="panel-grid">
+      <div class="panel">
+        <h2>Your Information</h2>
+        <div class="form-group"><label class="form-label">Full Name</label><input class="form-input" type="text" id="profName" value="Juan Dela Cruz"/></div>
+        <div class="form-group"><label class="form-label">Email Address</label><input class="form-input" type="email" id="profEmail" value="juandelacruz@gmail.com"/></div>
+        <div class="form-group"><label class="form-label">Phone Number</label><input class="form-input" type="tel" id="profPhone" value="09XX XXX XXXX"/></div>
+        <div class="form-group"><label class="form-label">New Password</label><input class="form-input" type="password" placeholder="Leave blank to keep current"/></div>
+        <div class="form-actions">
+          <button class="btn btn-primary" onclick="saveProfile()">Save Changes</button>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>Membership</h2>
+        <div class="list-card">
+          <div class="list-item"><div><strong>Member Since</strong><small>April 2026</small></div></div>
+          <div class="list-item"><div><strong>Account Type</strong><small>Passenger</small></div><span class="badge badge-blue">Active</span></div>
+          <div class="list-item"><div><strong>Total Trips</strong><small>7 trips completed</small></div></div>
+          <div class="list-item"><div><strong>Loyalty Points</strong><small>385 pts</small></div><span class="badge badge-green">Silver</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================== -->
+<!--   PAGE: ADMIN DASHBOARD        -->
+<!-- ============================== -->
+<div class="page" id="page-admin-dashboard">
+  <div class="dash-layout">
+    <aside class="sidebar">
+      <div class="sidebar-brand" onclick="goto('admin-dashboard')">
+        <div class="brand-icon">🚌</div>
+        <span>CityBus Admin</span>
+      </div>
+      <nav class="sidebar-nav">
+        <button class="sidebar-link active" onclick="goto('admin-dashboard')">📊 Dashboard</button>
+        <button class="sidebar-link" onclick="goto('admin-users')">👥 Users</button>
+        <button class="sidebar-link" onclick="goto('admin-routes')">🗺️ Routes</button>
+        <button class="sidebar-link" onclick="goto('admin-schedules')">📅 Schedules</button>
+        <button class="sidebar-link" onclick="goto('admin-reports')">📈 Reports</button>
+        <div class="sidebar-sep"></div>
+        <button class="sidebar-link" onclick="toggleTheme()">🌙 Toggle Theme</button>
+        <button class="sidebar-link" onclick="doLogout()">🚪 Logout</button>
+      </nav>
+    </aside>
+    <div class="dash-main">
+      <div class="dash-shell">
+        <div class="page-top">
+          <div><div class="page-subtitle">Admin Dashboard</div><h1 class="page-title">Bus Operations Control</h1></div>
+          <div class="toolbar">
+            <button class="theme-toggle" onclick="toggleTheme()" style="display:block;">🌙</button>
+            <button class="btn btn-ghost btn-sm" onclick="doLogout()">Logout</button>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-label">Total Users</div><div class="stat-value">1,234</div></div>
+          <div class="stat-card"><div class="stat-icon">🚌</div><div class="stat-label">Active Buses</div><div class="stat-value">45</div></div>
+          <div class="stat-card"><div class="stat-icon" style="background:var(--green);">💵</div><div class="stat-label">Revenue Today</div><div class="stat-value">₱45K</div></div>
+          <div class="stat-card"><div class="stat-icon" style="background:#FFB84B;">🗺️</div><div class="stat-label">Total Routes</div><div class="stat-value">10</div></div>
+        </div>
+
+        <div class="panel-grid">
+          <div class="panel">
+            <h2>Daily Bookings</h2>
+            <div class="bar-chart" id="adminBarChart">
+              <div class="bar" style="height:60%"><div class="bar-label">Mon</div></div>
+              <div class="bar" style="height:75%"><div class="bar-label">Tue</div></div>
+              <div class="bar" style="height:87%"><div class="bar-label">Wed</div></div>
+              <div class="bar" style="height:80%"><div class="bar-label">Thu</div></div>
+              <div class="bar" style="height:100%"><div class="bar-label">Fri</div></div>
+              <div class="bar" style="height:48%"><div class="bar-label">Sat</div></div>
+              <div class="bar" style="height:38%"><div class="bar-label">Sun</div></div>
+            </div>
+            <div style="margin-top:28px;" class="list-card">
+              <div class="list-item"><strong>Mon</strong><span>120</span></div>
+              <div class="list-item"><strong>Fri</strong><span>200 🔥</span></div>
+              <div class="list-item"><strong>Sun</strong><span>75</span></div>
+            </div>
+          </div>
+          <div>
+            <div class="panel">
+              <h2>Recent Activity</h2>
+              <div class="list-card">
+                <div class="list-item"><div><strong>New User</strong><small>Juan Dela Cruz registered</small></div><small class="text-muted">5m ago</small></div>
+                <div class="list-item"><div><strong>Bus Update</strong><small>Bus #2 maintenance done</small></div><small class="text-muted">15m</small></div>
+                <div class="list-item"><div><strong>Route Added</strong><small>Taguig → Manila</small></div><small class="text-muted">1h</small></div>
+                <div class="list-item"><div><strong>System</strong><small>Backup completed</small></div><small class="text-muted">2h</small></div>
+              </div>
+            </div>
+            <div class="panel">
+              <h2>Quick Actions</h2>
+              <div style="display:flex;flex-direction:column;gap:10px;">
+                <button class="btn btn-primary btn-block" onclick="goto('admin-users')">👥 Manage Users</button>
+                <button class="btn btn-accent btn-block" onclick="goto('admin-routes')">🗺️ Manage Routes</button>
+                <button class="btn btn-ghost btn-block" onclick="goto('admin-schedules')">📅 Schedules</button>
+                <button class="btn btn-ghost btn-block" onclick="goto('admin-reports')">📈 Reports</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================== -->
+<!--   PAGE: ADMIN USERS            -->
+<!-- ============================== -->
+<div class="page" id="page-admin-users">
+  <div class="dash-layout">
+    <aside class="sidebar">
+      <div class="sidebar-brand" onclick="goto('admin-dashboard')"><div class="brand-icon">🚌</div><span>CityBus Admin</span></div>
+      <nav class="sidebar-nav">
+        <button class="sidebar-link" onclick="goto('admin-dashboard')">📊 Dashboard</button>
+        <button class="sidebar-link active">👥 Users</button>
+        <button class="sidebar-link" onclick="goto('admin-routes')">🗺️ Routes</button>
+        <button class="sidebar-link" onclick="goto('admin-schedules')">📅 Schedules</button>
+        <button class="sidebar-link" onclick="goto('admin-reports')">📈 Reports</button>
+        <div class="sidebar-sep"></div>
+        <button class="sidebar-link" onclick="toggleTheme()">🌙 Toggle Theme</button>
+        <button class="sidebar-link" onclick="doLogout()">🚪 Logout</button>
+      </nav>
+    </aside>
+    <div class="dash-main">
+      <div class="dash-shell">
+        <div class="page-top">
+          <div><div class="page-subtitle">Manage Passengers</div><h1 class="page-title">User Administration</h1></div>
+          <div class="toolbar">
+            <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+            <button class="btn btn-primary" onclick="showAddUserModal()">+ Add User</button>
+          </div>
+        </div>
+        <div class="panel">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+            <input class="form-input" type="text" placeholder="Search users…" id="userSearch" oninput="filterUsers()" style="max-width:320px;"/>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody id="usersTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================== -->
+<!--   PAGE: ADMIN ROUTES           -->
+<!-- ============================== -->
+<div class="page" id="page-admin-routes">
+  <div class="dash-layout">
+    <aside class="sidebar">
+      <div class="sidebar-brand" onclick="goto('admin-dashboard')"><div class="brand-icon">🚌</div><span>CityBus Admin</span></div>
+      <nav class="sidebar-nav">
+        <button class="sidebar-link" onclick="goto('admin-dashboard')">📊 Dashboard</button>
+        <button class="sidebar-link" onclick="goto('admin-users')">👥 Users</button>
+        <button class="sidebar-link active">🗺️ Routes</button>
+        <button class="sidebar-link" onclick="goto('admin-schedules')">📅 Schedules</button>
+        <button class="sidebar-link" onclick="goto('admin-reports')">📈 Reports</button>
+        <div class="sidebar-sep"></div>
+        <button class="sidebar-link" onclick="toggleTheme()">🌙 Toggle Theme</button>
+        <button class="sidebar-link" onclick="doLogout()">🚪 Logout</button>
+      </nav>
+    </aside>
+    <div class="dash-main">
+      <div class="dash-shell">
+        <div class="page-top">
+          <div><div class="page-subtitle">Route Management</div><h1 class="page-title">Manage Routes</h1></div>
+          <div class="toolbar">
+            <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+            <button class="btn btn-primary" onclick="showAddRouteModal()">+ Add Route</button>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Route</th><th>Origin</th><th>Destination</th><th>Fare</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody id="routesTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================== -->
+<!--   PAGE: ADMIN SCHEDULES        -->
+<!-- ============================== -->
+<div class="page" id="page-admin-schedules">
+  <div class="dash-layout">
+    <aside class="sidebar">
+      <div class="sidebar-brand" onclick="goto('admin-dashboard')"><div class="brand-icon">🚌</div><span>CityBus Admin</span></div>
+      <nav class="sidebar-nav">
+        <button class="sidebar-link" onclick="goto('admin-dashboard')">📊 Dashboard</button>
+        <button class="sidebar-link" onclick="goto('admin-users')">👥 Users</button>
+        <button class="sidebar-link" onclick="goto('admin-routes')">🗺️ Routes</button>
+        <button class="sidebar-link active">📅 Schedules</button>
+        <button class="sidebar-link" onclick="goto('admin-reports')">📈 Reports</button>
+        <div class="sidebar-sep"></div>
+        <button class="sidebar-link" onclick="toggleTheme()">🌙 Toggle Theme</button>
+        <button class="sidebar-link" onclick="doLogout()">🚪 Logout</button>
+      </nav>
+    </aside>
+    <div class="dash-main">
+      <div class="dash-shell">
+        <div class="page-top">
+          <div><div class="page-subtitle">Schedule Management</div><h1 class="page-title">Manage Schedules</h1></div>
+          <div class="toolbar">
+            <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+            <button class="btn btn-primary" onclick="showAddScheduleModal()">+ Add Schedule</button>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Bus</th><th>Route</th><th>Departure</th><th>Arrival</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody id="schedulesTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================== -->
+<!--   PAGE: ADMIN REPORTS          -->
+<!-- ============================== -->
+<div class="page" id="page-admin-reports">
+  <div class="dash-layout">
+    <aside class="sidebar">
+      <div class="sidebar-brand" onclick="goto('admin-dashboard')"><div class="brand-icon">🚌</div><span>CityBus Admin</span></div>
+      <nav class="sidebar-nav">
+        <button class="sidebar-link" onclick="goto('admin-dashboard')">📊 Dashboard</button>
+        <button class="sidebar-link" onclick="goto('admin-users')">👥 Users</button>
+        <button class="sidebar-link" onclick="goto('admin-routes')">🗺️ Routes</button>
+        <button class="sidebar-link" onclick="goto('admin-schedules')">📅 Schedules</button>
+        <button class="sidebar-link active">📈 Reports</button>
+        <div class="sidebar-sep"></div>
+        <button class="sidebar-link" onclick="toggleTheme()">🌙 Toggle Theme</button>
+        <button class="sidebar-link" onclick="doLogout()">🚪 Logout</button>
+      </nav>
+    </aside>
+    <div class="dash-main">
+      <div class="dash-shell">
+        <div class="page-top">
+          <div><div class="page-subtitle">Reports</div><h1 class="page-title">Export &amp; Audit Logs</h1></div>
+          <div class="toolbar"><button class="theme-toggle" onclick="toggleTheme()">🌙</button></div>
+        </div>
+        <div class="panel-grid-2">
+          <div class="panel">
+            <h2>Export Reports</h2>
+            <div style="display:flex;flex-direction:column;gap:12px;">
+              <button class="btn btn-primary btn-block" onclick="exportCSV()">📥 Export CSV</button>
+              <button class="btn btn-accent btn-block" onclick="showToast('PDF generation coming soon','info')">📄 Export PDF</button>
+              <button class="btn btn-ghost btn-block" onclick="showToast('Audit log loaded','success')">🔍 Audit History</button>
+            </div>
+          </div>
+          <div class="panel">
+            <h2>Report Summary</h2>
+            <div class="list-card">
+              <div class="list-item"><div><strong>Daily Sales</strong></div><span>₱45,320</span></div>
+              <div class="list-item"><div><strong>New Transactions</strong></div><span>156</span></div>
+              <div class="list-item"><div><strong>Open Refunds</strong></div><span class="badge badge-red">2</span></div>
+              <div class="list-item"><div><strong>Total Revenue (Month)</strong></div><span style="font-weight:700;color:var(--green);">₱1,234,500</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================== -->
+<!--   PAGE: FINANCE DASHBOARD      -->
+<!-- ============================== -->
+<div class="page" id="page-finance-dashboard">
+  <nav class="topnav">
+    <div class="brand"><div class="brand-icon">🚌</div><span style="font-family:var(--font-head);font-weight:800;">CityBus Finance</span></div>
+    <div class="nav-links">
+      <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+      <button class="btn btn-ghost btn-sm" onclick="doLogout()">Logout</button>
+    </div>
+  </nav>
+  <div class="shell">
+    <div class="page-top">
+      <div><div class="page-subtitle">Finance Dashboard</div><h1 class="page-title">Revenue &amp; Reporting</h1></div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-icon" style="background:var(--green);">💵</div><div class="stat-label">Today's Revenue</div><div class="stat-value">₱45,320</div></div>
+      <div class="stat-card"><div class="stat-icon">📈</div><div class="stat-label">This Month</div><div class="stat-value">₱1.23M</div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#FFB84B;">⏳</div><div class="stat-label">Pending Payments</div><div class="stat-value">₱23,450</div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:var(--primary);">🧾</div><div class="stat-label">Total Transactions</div><div class="stat-value">3,456</div></div>
+    </div>
+    <div class="panel-grid">
+      <div class="panel">
+        <h2>Revenue by Route</h2>
+        <div class="list-card">
+          <div class="list-item"><strong>Route 1 — Manila → Makati</strong><span>₱120,000</span></div>
+          <div class="list-item"><strong>Route 2 — QC → Pasig</strong><span>₱100,000</span></div>
+          <div class="list-item"><strong>Route 3 — Pasay → MOA</strong><span>₱91,000</span></div>
+          <div class="list-item"><strong>Route 4 — Manila → BGC</strong><span>₱78,000</span></div>
+        </div>
+      </div>
+      <div>
+        <div class="panel">
+          <h2>Payment Methods</h2>
+          <div class="list-card">
+            <div class="list-item"><strong>Credit / Debit Card</strong><span>45%</span></div>
+            <div class="list-item"><strong>GCash</strong><span>35%</span></div>
+            <div class="list-item"><strong>Maya</strong><span>20%</span></div>
+          </div>
+        </div>
+        <div class="panel">
+          <h2>Financial Summary</h2>
+          <div class="list-card">
+            <div class="list-item"><div><strong>Total Revenue</strong></div><span>₱1,234,500</span></div>
+            <div class="list-item"><div><strong>Total Expenses</strong></div><span>₱456,000</span></div>
+            <div class="list-item"><div><strong>Net Profit</strong></div><span style="color:var(--green);font-weight:800;">₱778,500</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================== -->
+<!--   PAGE: OPERATOR DASHBOARD     -->
+<!-- ============================== -->
+<div class="page" id="page-operator-dashboard">
+  <nav class="topnav">
+    <div class="brand"><div class="brand-icon">🚌</div><span style="font-family:var(--font-head);font-weight:800;">CityBus Operator</span></div>
+    <div class="nav-links">
+      <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+      <button class="btn btn-ghost btn-sm" onclick="doLogout()">Logout</button>
+    </div>
+  </nav>
+  <div class="shell">
+    <div class="page-top">
+      <div><div class="page-subtitle">Bus Operator Dashboard</div><h1 class="page-title">Assigned Trips &amp; Boarding</h1></div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-icon">🚌</div><div class="stat-label">Active Routes</div><div class="stat-value">3</div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#FFB84B;">👨‍✈️</div><div class="stat-label">Driver Assigned</div><div class="stat-value" style="font-size:1.1rem;">Juan Cruz</div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:var(--green);">✅</div><div class="stat-label">Tickets Validated</div><div class="stat-value">24</div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:var(--primary);">📍</div><div class="stat-label">Next Departure</div><div class="stat-value" style="font-size:1.1rem;">08:00 AM</div></div>
+    </div>
+    <div class="panel-grid">
+      <div class="panel">
+        <h2>Assigned Trips</h2>
+        <div class="list-card">
+          <div class="list-item"><div><strong>Route 1 — Makati → Manila</strong><small>Bus #1 · 08:00 AM</small></div><span class="badge badge-green">Active</span></div>
+          <div class="list-item"><div><strong>Route 4 — Pasig → Ortigas</strong><small>Bus #4 · 10:30 AM</small></div><span class="badge badge-green">Active</span></div>
+          <div class="list-item"><div><strong>Route 7 — BGC → Quezon City</strong><small>Bus #7 · 02:00 PM</small></div><span class="badge badge-gray">Idle</span></div>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>Boarding Validation</h2>
+        <div class="list-card">
+          <div class="list-item">
+            <div><strong>Scan QR Ticket</strong><small>One-time boarding validation</small></div>
+            <button class="btn btn-primary btn-sm" onclick="showQRScanner()">📷 Scan</button>
+          </div>
+          <div class="list-item">
+            <div><strong>Manual Ticket Check</strong><small>Enter ticket number</small></div>
+            <button class="btn btn-ghost btn-sm" onclick="showManualCheck()">🔍 Verify</button>
+          </div>
+        </div>
+        <div id="manualCheckArea" style="display:none;" class="mt-2">
+          <div class="form-group">
+            <label class="form-label">Ticket Number</label>
+            <input class="form-input" type="text" placeholder="CB1748950234" id="checkTicketNum"/>
+          </div>
+          <button class="btn btn-success btn-sm" onclick="verifyTicket()">Verify</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================== -->
+<!--          JAVASCRIPT            -->
+<!-- ============================== -->
+
+<script src="app.js"></script>
+</body>
+</html>
