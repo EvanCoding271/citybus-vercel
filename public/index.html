@@ -295,15 +295,6 @@
     <div class="panel-grid">
       <div class="panel">
         <h2>Trip Details</h2>
-        <div class="form-group">
-          <label class="form-label">Select Route</label>
-          <select class="form-input" id="routeSelect" onchange="updateRouteInfo()">
-            <option value="1" data-price="65" data-from="Manila" data-to="Makati">Route 1: Manila → Makati (₱65)</option>
-            <option value="2" data-price="75" data-from="Quezon City" data-to="Pasig">Route 2: Quezon City → Pasig (₱75)</option>
-            <option value="3" data-price="55" data-from="Pasay" data-to="MOA">Route 3: Pasay → MOA (₱55)</option>
-            <option value="4" data-price="80" data-from="Manila" data-to="BGC">Route 4: Manila → BGC (₱80)</option>
-          </select>
-        </div>
         <div class="trip-card mt-2 mb-2">
           <div>
             <div class="trip-route">
@@ -314,6 +305,11 @@
             <div class="trip-meta" id="tripTime2">08:00 AM · 09:15 AM</div>
           </div>
           <div class="trip-price" id="tripPrice">₱65</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Select Route</label>
+          <select class="form-input" id="routeSelect" onchange="updateRouteInfo(); loadSeatMap()">
+          </select>
         </div>
         <div class="form-row">
           <div class="form-group">

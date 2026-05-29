@@ -603,7 +603,7 @@ def list_schedules(u=Depends(current_user)):
             FROM schedules s
             JOIN buses b ON b.id = s.bus_id
             JOIN routes r ON r.id = s.route_id
-            ORDER BY s.departure_time
+            ORDER BY r.id, s.departure_time
         """)
         rows = cur.fetchall()
         result = []
