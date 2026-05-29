@@ -180,21 +180,68 @@ async function initBookingPage() {
 
 function buildScheduleSelect() {
   const sel = document.getElementById('routeSelect');
+  const dropdown = document.getElementById('routeSelectDropdown');
+  const label = document.getElementById('routeSelectLabel');
   sel.innerHTML = '';
-  App.schedules.forEach(s => {
-    const dep  = new Date(s.departure_time).toLocaleString('en-PH', {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
-    const opt  = document.createElement('option');
-    opt.value  = s.id;
+  if (dropdown) dropdown.innerHTML = '';
+  if (!App.schedules.length) {
+    if (label) label.textContent = 'No schedules available';
+    return;
+  }
+  App.schedules.forEach((s, i) => {
+    const dep = new Date(s.departure_time).toLocaleString('en-PH', {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+    // hidden select option (keeps existing logic working)
+    const opt = document.createElement('option');
+    opt.value = s.id;
     opt.dataset.from  = s.origin;
     opt.dataset.to    = s.destination;
     opt.dataset.price = s.base_fare;
     opt.dataset.dep   = dep;
     opt.textContent   = `${s.route} — ${s.origin} → ${s.destination}  ·  ${dep}  (₱${s.base_fare})`;
     sel.appendChild(opt);
+    // custom dropdown option
+    if (dropdown) {
+      const div = document.createElement('div');
+      div.className = 'custom-select-option' + (i === 0 ? ' selected' : '');
+      div.textContent = opt.textContent;
+      div.dataset.index = i;
+      div.onclick = () => selectRouteOption(i);
+      dropdown.appendChild(div);
+    }
   });
+  if (label) label.textContent = sel.options[0]?.textContent || '';
   updateRouteInfo();
   loadSeatMap();
 }
+
+function toggleRouteDropdown() {
+  const wrapper = document.getElementById('routeSelectWrapper');
+  if (wrapper) wrapper.classList.toggle('open');
+}
+
+function selectRouteOption(index) {
+  const sel = document.getElementById('routeSelect');
+  const label = document.getElementById('routeSelectLabel');
+  const wrapper = document.getElementById('routeSelectWrapper');
+  const dropdown = document.getElementById('routeSelectDropdown');
+  sel.selectedIndex = index;
+  if (label) label.textContent = sel.options[index]?.textContent || '';
+  if (wrapper) wrapper.classList.remove('open');
+  // update selected highlight
+  if (dropdown) {
+    dropdown.querySelectorAll('.custom-select-option').forEach((el, i) => {
+      el.classList.toggle('selected', i === index);
+    });
+  }
+  updateRouteInfo();
+  loadSeatMap();
+}
+
+// close dropdown when clicking outside
+document.addEventListener('click', (e) => {
+  const wrapper = document.getElementById('routeSelectWrapper');
+  if (wrapper && !wrapper.contains(e.target)) wrapper.classList.remove('open');
+});
 
 async function loadSeatMap() {
   const sel = document.getElementById('routeSelect');

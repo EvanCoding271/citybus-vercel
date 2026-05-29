@@ -308,8 +308,14 @@
         </div>
         <div class="form-group">
           <label class="form-label">Select Route</label>
-          <select class="form-input" id="routeSelect" onchange="updateRouteInfo(); loadSeatMap()">
-          </select>
+          <div class="custom-select-wrapper" id="routeSelectWrapper">
+            <div class="custom-select-trigger form-input" id="routeSelectTrigger" onclick="toggleRouteDropdown()">
+              <span id="routeSelectLabel">Loading routes...</span>
+              <span class="custom-select-arrow">▾</span>
+            </div>
+            <div class="custom-select-dropdown" id="routeSelectDropdown"></div>
+          </div>
+          <select id="routeSelect" style="display:none;"></select>
         </div>
         <div class="form-row">
           <div class="form-group">
