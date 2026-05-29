@@ -58,6 +58,7 @@ function goto(pageId) {
     'admin-schedules':    loadSchedulesTable,
     'admin-reports':      loadReports,
     'admin-dashboard':    () => setTimeout(initAdminCharts, 80),
+    'admin-settings':     initAdminSettings,
     'finance-dashboard':  () => { loadFinanceStats(); setTimeout(initFinanceCharts, 80); },
   };
   if (init[pageId]) init[pageId]();
@@ -862,6 +863,103 @@ function setBtnLoading(sel, loading) {
   if (!btn) return;
   if (loading) { btn._t = btn.innerHTML; btn.innerHTML = '<span class="spinner"></span> Please wait…'; btn.disabled = true; }
   else         { btn.innerHTML = btn._t || btn.innerHTML; btn.disabled = false; }
+}
+
+/* =======================================================  ADMIN — CHANGE PASSWORD  */
+function initAdminSettings() {
+  // Populate account info from current user
+  const user = App.currentUser;
+  if (user) {
+    setTxt('adminSettingsName',  user.full_name || user.name || '—');
+    setTxt('adminSettingsEmail', user.email || '—');
+  }
+  // Clear all fields
+  setVal('adminCurPassword', '');
+  setVal('adminNewPassword', '');
+  setVal('adminConfirmPassword', '');
+  document.getElementById('adminPwError').style.display = 'none';
+  document.getElementById('pwStrengthBar').style.width = '0%';
+  setTxt('pwStrengthLabel', 'Enter a new password');
+
+  // Last changed timestamp
+  const last = localStorage.getItem('admin_pw_last_changed');
+  if (last) {
+    const d = new Date(last).toLocaleDateString('en-PH', { dateStyle: 'long' });
+    setTxt('adminLastPwChange', `Last updated on ${d}`);
+  }
+}
+
+function togglePwVis(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  const isHidden = input.type === 'password';
+  input.type = isHidden ? 'text' : 'password';
+  btn.textContent = isHidden ? '🙈' : '👁';
+}
+
+function checkPwStrength(pw) {
+  const bar   = document.getElementById('pwStrengthBar');
+  const label = document.getElementById('pwStrengthLabel');
+  if (!bar || !label) return;
+
+  let score = 0;
+  if (pw.length >= 8)                    score++;
+  if (pw.length >= 12)                   score++;
+  if (/[A-Z]/.test(pw))                  score++;
+  if (/[0-9]/.test(pw))                  score++;
+  if (/[^A-Za-z0-9]/.test(pw))          score++;
+
+  const levels = [
+    { pct: '0%',   color: 'var(--muted)',    text: 'Enter a new password' },
+    { pct: '20%',  color: 'var(--primary)',  text: 'Very weak' },
+    { pct: '40%',  color: 'var(--primary)',  text: 'Weak' },
+    { pct: '60%',  color: 'var(--amber)',    text: 'Fair' },
+    { pct: '80%',  color: 'var(--amber)',    text: 'Good' },
+    { pct: '100%', color: 'var(--green)',    text: 'Strong ✅' },
+  ];
+
+  const lvl = levels[Math.min(score, 5)];
+  bar.style.width      = pw.length ? lvl.pct : '0%';
+  bar.style.background = lvl.color;
+  label.style.color    = lvl.color;
+  label.textContent    = pw.length ? lvl.text : levels[0].text;
+}
+
+async function doAdminChangePassword() {
+  const cur     = document.getElementById('adminCurPassword').value;
+  const newPw   = document.getElementById('adminNewPassword').value;
+  const confirm = document.getElementById('adminConfirmPassword').value;
+  const errDiv  = document.getElementById('adminPwError');
+
+  const showErr = msg => {
+    errDiv.textContent    = msg;
+    errDiv.style.display  = 'block';
+  };
+  errDiv.style.display = 'none';
+
+  if (!cur)              { showErr('Please enter your current password.'); return; }
+  if (!newPw)            { showErr('Please enter a new password.'); return; }
+  if (newPw.length < 8)  { showErr('New password must be at least 8 characters.'); return; }
+  if (newPw !== confirm) { showErr('Passwords do not match. Please try again.'); return; }
+  if (cur === newPw)     { showErr('New password must be different from your current password.'); return; }
+
+  setBtnLoading('#adminChangePwBtn', true);
+  try {
+    await api('PUT', '/api/profile', { password: newPw, current_password: cur });
+    localStorage.setItem('admin_pw_last_changed', new Date().toISOString());
+    showToast('Password updated successfully! 🔑', 'success');
+    setVal('adminCurPassword', '');
+    setVal('adminNewPassword', '');
+    setVal('adminConfirmPassword', '');
+    document.getElementById('pwStrengthBar').style.width = '0%';
+    setTxt('pwStrengthLabel', 'Enter a new password');
+    const d = new Date().toLocaleDateString('en-PH', { dateStyle: 'long' });
+    setTxt('adminLastPwChange', `Last updated on ${d}`);
+  } catch (e) {
+    showErr(e.message || 'Failed to update password. Please check your current password.');
+  } finally {
+    setBtnLoading('#adminChangePwBtn', false);
+  }
 }
 
 /* =======================================================  INIT  */

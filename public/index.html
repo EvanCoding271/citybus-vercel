@@ -616,6 +616,7 @@
         <button class="sidebar-link" onclick="goto('admin-schedules')">📅 Schedules</button>
         <button class="sidebar-link" onclick="goto('admin-reports')">📈 Reports</button>
         <div class="sidebar-sep"></div>
+        <button class="sidebar-link" onclick="goto('admin-settings')">🔑 Change Password</button>
         <button class="sidebar-link" onclick="toggleTheme()">🌙 Toggle Theme</button>
         <button class="sidebar-link" onclick="doLogout()">🚪 Logout</button>
       </nav>
@@ -686,6 +687,7 @@
         <button class="sidebar-link" onclick="goto('admin-schedules')">📅 Schedules</button>
         <button class="sidebar-link" onclick="goto('admin-reports')">📈 Reports</button>
         <div class="sidebar-sep"></div>
+        <button class="sidebar-link" onclick="goto('admin-settings')">🔑 Change Password</button>
         <button class="sidebar-link" onclick="toggleTheme()">🌙 Toggle Theme</button>
         <button class="sidebar-link" onclick="doLogout()">🚪 Logout</button>
       </nav>
@@ -729,6 +731,7 @@
         <button class="sidebar-link" onclick="goto('admin-schedules')">📅 Schedules</button>
         <button class="sidebar-link" onclick="goto('admin-reports')">📈 Reports</button>
         <div class="sidebar-sep"></div>
+        <button class="sidebar-link" onclick="goto('admin-settings')">🔑 Change Password</button>
         <button class="sidebar-link" onclick="toggleTheme()">🌙 Toggle Theme</button>
         <button class="sidebar-link" onclick="doLogout()">🚪 Logout</button>
       </nav>
@@ -769,6 +772,7 @@
         <button class="sidebar-link active">📅 Schedules</button>
         <button class="sidebar-link" onclick="goto('admin-reports')">📈 Reports</button>
         <div class="sidebar-sep"></div>
+        <button class="sidebar-link" onclick="goto('admin-settings')">🔑 Change Password</button>
         <button class="sidebar-link" onclick="toggleTheme()">🌙 Toggle Theme</button>
         <button class="sidebar-link" onclick="doLogout()">🚪 Logout</button>
       </nav>
@@ -809,6 +813,7 @@
         <button class="sidebar-link" onclick="goto('admin-schedules')">📅 Schedules</button>
         <button class="sidebar-link active">📈 Reports</button>
         <div class="sidebar-sep"></div>
+        <button class="sidebar-link" onclick="goto('admin-settings')">🔑 Change Password</button>
         <button class="sidebar-link" onclick="toggleTheme()">🌙 Toggle Theme</button>
         <button class="sidebar-link" onclick="doLogout()">🚪 Logout</button>
       </nav>
@@ -1197,6 +1202,124 @@
       </div>
     </div>
 
+  </div>
+</div>
+
+<!-- ============================== -->
+<!--   PAGE: ADMIN SETTINGS         -->
+<!-- ============================== -->
+<div class="page" id="page-admin-settings">
+  <div class="dash-layout">
+    <aside class="sidebar">
+      <div class="sidebar-brand" onclick="goto('admin-dashboard')">
+        <div class="brand-icon">🚌</div>
+        <span>CityBus Admin</span>
+      </div>
+      <nav class="sidebar-nav">
+        <button class="sidebar-link" onclick="goto('admin-dashboard')">📊 Dashboard</button>
+        <button class="sidebar-link" onclick="goto('admin-users')">👥 Users</button>
+        <button class="sidebar-link" onclick="goto('admin-routes')">🗺️ Routes</button>
+        <button class="sidebar-link" onclick="goto('admin-schedules')">📅 Schedules</button>
+        <button class="sidebar-link" onclick="goto('admin-reports')">📈 Reports</button>
+        <div class="sidebar-sep"></div>
+        <button class="sidebar-link active">🔑 Change Password</button>
+        <button class="sidebar-link" onclick="toggleTheme()">🌙 Toggle Theme</button>
+        <button class="sidebar-link" onclick="doLogout()">🚪 Logout</button>
+      </nav>
+    </aside>
+    <div class="dash-main">
+      <div class="dash-shell">
+        <div class="page-top">
+          <div>
+            <div class="page-subtitle">Account Settings</div>
+            <h1 class="page-title">Change Password</h1>
+          </div>
+          <div class="toolbar">
+            <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+          </div>
+        </div>
+
+        <div class="panel-grid">
+          <!-- Change Password Form -->
+          <div class="panel">
+            <h2>🔑 Update Password</h2>
+            <p class="text-muted text-sm" style="margin-bottom:22px;">Choose a strong password with at least 8 characters.</p>
+
+            <div class="form-group">
+              <label class="form-label">Current Password</label>
+              <div style="position:relative;">
+                <input class="form-input" type="password" id="adminCurPassword" placeholder="Enter your current password" style="padding-right:44px;"/>
+                <button onclick="togglePwVis('adminCurPassword',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:1rem;">👁</button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">New Password</label>
+              <div style="position:relative;">
+                <input class="form-input" type="password" id="adminNewPassword" placeholder="At least 8 characters" style="padding-right:44px;" oninput="checkPwStrength(this.value)"/>
+                <button onclick="togglePwVis('adminNewPassword',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:1rem;">👁</button>
+              </div>
+              <!-- Strength meter -->
+              <div style="margin-top:10px;">
+                <div class="progress-bar-wrap"><div id="pwStrengthBar" class="progress-bar" style="width:0%;transition:width .3s,background .3s;"></div></div>
+                <div id="pwStrengthLabel" style="font-size:.78rem;color:var(--muted);margin-top:5px;">Enter a new password</div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Confirm New Password</label>
+              <div style="position:relative;">
+                <input class="form-input" type="password" id="adminConfirmPassword" placeholder="Re-enter new password" style="padding-right:44px;"/>
+                <button onclick="togglePwVis('adminConfirmPassword',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:1rem;">👁</button>
+              </div>
+            </div>
+
+            <div id="adminPwError" style="display:none;padding:12px 16px;background:rgba(255,96,96,.1);border:1px solid rgba(255,96,96,.25);border-radius:10px;font-size:.88rem;color:var(--primary);margin-bottom:16px;"></div>
+
+            <div class="form-actions">
+              <button class="btn btn-ghost" onclick="goto('admin-dashboard')">Cancel</button>
+              <button class="btn btn-primary" id="adminChangePwBtn" onclick="doAdminChangePassword()">🔑 Update Password</button>
+            </div>
+          </div>
+
+          <!-- Info panel -->
+          <div style="display:flex;flex-direction:column;gap:18px;">
+            <div class="panel">
+              <h2>👤 Account Info</h2>
+              <div class="list-card">
+                <div class="list-item">
+                  <div><strong>Name</strong><small id="adminSettingsName">—</small></div>
+                </div>
+                <div class="list-item">
+                  <div><strong>Email</strong><small id="adminSettingsEmail">—</small></div>
+                </div>
+                <div class="list-item">
+                  <div><strong>Role</strong></div>
+                  <span class="badge badge-blue">Admin</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="callout">
+              <h3>🛡️ Password Requirements</h3>
+              <ul>
+                <li>Minimum 8 characters</li>
+                <li>Mix of uppercase and lowercase letters</li>
+                <li>At least one number</li>
+                <li>At least one special character (!, @, #…)</li>
+                <li>Do not reuse your last 3 passwords</li>
+              </ul>
+            </div>
+
+            <div class="panel" style="background:rgba(52,212,154,.06);border-color:rgba(52,212,154,.2);">
+              <h2 style="color:var(--green);">✅ Last Changed</h2>
+              <p class="text-muted text-sm" id="adminLastPwChange">Never — please set a strong password.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
   </div>
 </div>
 

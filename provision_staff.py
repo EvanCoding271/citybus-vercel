@@ -31,6 +31,12 @@ STAFF = [
     ("Evander Prodigo",     "EProdigoO@cb.ph",       "09876543210",  "Evilheroinfernalwing1",    "operator"),
 
     ("Erin Butial",        "EButialA@cb.ph",        "09234567890",  "Admin123",          "admin"),
+    ("Erin Butial",        "EButial@admin.cb.ph",   None,           "Admin123",          "admin"),
+    ("CJ Gonzales",        "CJGonzales@admin.cb.ph", None,          "Admin123",          "admin"),
+    ("JM Lacanilao",       "JMLacanilao@finance.cb.ph", None,     "Finance123",        "finance"),
+    ("NA Portugal",        "NAPortugal@admin.cb.ph", None,          "Admin123",          "admin"),
+    ("KM Paulino",         "KMPaulino@operator.cb.ph", None,       "Operator123",       "operator"),
+    ("AM Arpe",            "AMArpe@finance.cb.ph",   None,           "Finance123",        "finance")
 
     # Add more staff below — copy the line above and change the values:
     # ("Juan Santos",        "JSantos@cb.ph",        "09171234567",  "StrongPass@2026",          "finance"),
