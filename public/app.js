@@ -331,6 +331,154 @@ async function doPayment() {
   }
 }
 
+/* =======================================================  QR CODE — SELF-CONTAINED  */
+/*  Pure-JS QR encoder (no external lib needed).
+    Encodes alphanumeric/byte data into a QR matrix and draws it on a <canvas>.  */
+const _QR = (() => {
+  /* ---- Galois Field GF(256) ---- */
+  const EXP = new Uint8Array(512), LOG = new Uint8Array(256);
+  (function(){let x=1;for(let i=0;i<255;i++){EXP[i]=x;LOG[x]=i;x<<=1;if(x&256)x^=285;}for(let i=255;i<512;i++)EXP[i]=EXP[i-255];})();
+  const mul=(a,b)=>a&&b?EXP[LOG[a]+LOG[b]]:0;
+  function polyMul(p,q){const r=new Uint8Array(p.length+q.length-1);for(let i=0;i<p.length;i++)for(let j=0;j<q.length;j++)r[i+j]^=mul(p[i],q[j]);return r;}
+  function genPoly(n){let g=new Uint8Array([1]);for(let i=0;i<n;i++)g=polyMul(g,new Uint8Array([1,EXP[i]]));return g;}
+  function rsEncode(data,n){const gen=genPoly(n);let msg=new Uint8Array(data.length+n);msg.set(data);for(let i=0;i<data.length;i++){const c=msg[i];if(c)for(let j=0;j<gen.length;j++)msg[i+j]^=mul(gen[j],c);}return msg.slice(data.length);}
+
+  /* ---- Version 3-H tables (up to 32 chars byte mode) ---- */
+  const ALIGN=[[6,22],[6,22],[6,26],[6,26],[6,30],[6,30],[6,34]]; // v2-8
+  const EC_BLOCKS=[[1,19],[1,16],[1,13],[1,9]]; // v1 L/M/Q/H
+  // We'll use version auto-select L correction, byte mode only
+  const CAPS_L=[17,32,53,78,106,134,154,192,230,271]; // v1-10 byte L
+
+  function encode(text) {
+    const bytes = [...new TextEncoder().encode(text)];
+    // pick smallest version
+    let ver = 1;
+    for(;ver<=10;ver++) if(bytes.length<=CAPS_L[ver-1]) break;
+    if(ver>10) ver=10; // truncate gracefully
+
+    const n = ver*4+17;
+    const mat = Array.from({length:n},()=>new Int8Array(n).fill(-1));
+    const res = Array.from({length:n},()=>new Uint8Array(n)); // reserved mask
+
+    function setMod(r,c,v){mat[r][c]=v;res[r][c]=1;}
+    // finder + separators
+    function finder(r,c){
+      for(let i=0;i<7;i++)for(let j=0;j<7;j++){
+        const b=(i===0||i===6||j===0||j===6||(i>=2&&i<=4&&j>=2&&j<=4))?1:0;
+        setMod(r+i,c+j,b);
+      }
+      for(let k=-1;k<=7;k++){
+        if(r+k>=0&&r+k<n){if(c-1>=0)setMod(r+k,c-1,0);if(c+7<n)setMod(r+k,c+7,0);}
+        if(c+k>=0&&c+k<n){if(r-1>=0)setMod(r-1,c+k,0);if(r+7<n)setMod(r+7,c+k,0);}
+      }
+    }
+    finder(0,0);finder(0,n-7);finder(n-7,0);
+    // timing
+    for(let i=8;i<n-8;i++){setMod(6,i,(i%2===0)?1:0);setMod(i,6,(i%2===0)?1:0);}
+    // dark module
+    setMod(4*ver+9,8,1);
+    // alignment
+    if(ver>=2){const pos=ALIGN[ver-2];for(const ar of pos)for(const ac of pos){
+      if(res[ar][ac])continue;
+      for(let i=-2;i<=2;i++)for(let j=-2;j<=2;j++){
+        const b=(Math.abs(i)===2||Math.abs(j)===2||(!i&&!j))?1:0;setMod(ar+i,ac+j,b);
+      }
+    }}
+    // format info placeholders
+    const fmtPos=[[8,0],[8,1],[8,2],[8,3],[8,4],[8,5],[8,7],[8,8],[7,8],[5,8],[4,8],[3,8],[2,8],[1,8],[0,8],
+                  [n-1,8],[n-2,8],[n-3,8],[n-4,8],[n-5,8],[n-6,8],[n-7,8],[8,n-8],[8,n-7],[8,n-6],[8,n-5],[8,n-4],[8,n-3],[8,n-2],[8,n-1]];
+    fmtPos.forEach(([r,c])=>{if(r<n&&c<n)res[r][c]=1;});
+
+    // --- build data codewords ---
+    // EC level L=0b01, mode byte=0b0100
+    const ecLevel=1; // L
+    // version EC params (simplified, v1-4 L)
+    const ecTable=[[1,7,19],[1,10,16],[1,15,13],[1,20,9],[1,26,34]]; // [blocks,ecPerBlock,dataPerBlock] approx
+    // use proper tables for v1-10 L
+    const vEcL=[[1,7,19],[1,10,16],[1,15,13],[1,20,9],[1,26,34],[2,18,22],[2,20,16],[2,24,14],[2,30,12],[4,18,26]];
+    const [blk,ecc,dpc]=vEcL[ver-1]||vEcL[0];
+    const totalData=blk*dpc;
+
+    // byte mode header
+    const header=[];
+    // mode indicator 4 bits = 0100
+    // char count: v1-9 = 8 bits
+    let bits=0,bitLen=0;
+    const pushBits=(v,len)=>{bits=(bits<<len)|v;bitLen+=len;while(bitLen>=8){header.push((bits>>(bitLen-8))&0xFF);bitLen-=8;}};
+    pushBits(0b0100,4);
+    pushBits(bytes.length,8);
+    bytes.forEach(b=>pushBits(b,8));
+    pushBits(0b0000,4); // terminator
+    while(bitLen>0)pushBits(0,8);
+    // pad to totalData
+    const PAD=[0xEC,0x11];
+    while(header.length<totalData)header.push(PAD[(header.length-bytes.length-3)%2]||0);
+    header.length=totalData;
+
+    // split into blocks and add EC
+    const dataBlocks=[],ecBlocks=[];
+    for(let i=0;i<blk;i++){
+      const d=header.slice(i*dpc,(i+1)*dpc);
+      dataBlocks.push(d);
+      ecBlocks.push(rsEncode(new Uint8Array(d),ecc));
+    }
+    // interleave
+    const codewords=[];
+    for(let i=0;i<dpc;i++)dataBlocks.forEach(b=>{if(i<b.length)codewords.push(b[i]);});
+    for(let i=0;i<ecc;i++)ecBlocks.forEach(b=>codewords.push(b[i]));
+
+    // place data bits (mask 0: (r+c)%2==0)
+    let cIdx=0,bIdx=7;
+    const getBit=()=>{if(cIdx>=codewords.length)return 0;const b=(codewords[cIdx]>>(7-bIdx))&1;bIdx--;if(bIdx<0){bIdx=7;cIdx++;}return b;};
+    let up=true;
+    for(let col=n-1;col>=0;col-=2){
+      if(col===6)col--;
+      for(let row=up?n-1:0;up?row>=0:row<n;up?row--:row++){
+        for(let dc=0;dc<2;dc++){
+          const c=col-dc;
+          if(res[row][c])continue;
+          const bit=getBit();
+          const mask=((row+c)%2===0)?1:0;
+          mat[row][c]=bit^mask;
+        }
+      }
+      up=!up;
+    }
+
+    // write format info (mask 0, EC level L = 01)
+    const fmtData=0b01000; // ECL=01 mask=000
+    const fmtPoly=0b10100110111;
+    let fmt=(ecLevel<<3)|0; // mask pattern 0
+    fmt=(fmt<<10);
+    let tmp=fmt;
+    for(let i=14;i>=10;i--){if(tmp>>i)tmp^=fmtPoly<<(i-10);}
+    fmt|=tmp;
+    fmt^=0b101010000010010;
+    const fmtBits=[];for(let i=14;i>=0;i--)fmtBits.push((fmt>>i)&1);
+    const fp1=[[8,0],[8,1],[8,2],[8,3],[8,4],[8,5],[8,7],[8,8],[7,8],[5,8],[4,8],[3,8],[2,8],[1,8],[0,8]];
+    const fp2=[[n-1,8],[n-2,8],[n-3,8],[n-4,8],[n-5,8],[n-6,8],[n-7,8],[8,n-8],[8,n-7],[8,n-6],[8,n-5],[8,n-4],[8,n-3],[8,n-2],[8,n-1]];
+    fp1.forEach(([r,c],i)=>{if(r<n&&c<n)mat[r][c]=fmtBits[i];});
+    fp2.forEach(([r,c],i)=>{if(r<n&&c<n)mat[r][c]=fmtBits[i];});
+
+    return {mat,size:n};
+  }
+
+  function draw(text, canvas, px=4, dark='#000', light='#fff') {
+    const {mat,size} = encode(text);
+    const dim = (size+8)*px; // 4-module quiet zone each side
+    canvas.width = canvas.height = dim;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = light; ctx.fillRect(0,0,dim,dim);
+    ctx.fillStyle = dark;
+    const off = 4*px;
+    for(let r=0;r<size;r++)
+      for(let c=0;c<size;c++)
+        if(mat[r][c]===1)
+          ctx.fillRect(off+c*px, off+r*px, px, px);
+  }
+  return {draw};
+})();
+
 /* =======================================================  CONFIRMATION / QR  */
 function initConfirmationPage() {
   const b = App.booking;
@@ -345,33 +493,22 @@ function initConfirmationPage() {
   const qrDiv = document.getElementById('qrCode');
   qrDiv.innerHTML = '';
 
-  // QR code data — use just the ticket number as text for cleaner QR
   const qrText = b.qr_code
-    ? `CB-TICKET:${b.qr_code}|ROUTE:${b.route}|SEATS:${(b.seats||[]).join(',')}|PAX:${b.passenger}`
-    : 'CB-TICKET:DEMO|ROUTE:Manila→Makati|SEATS:B3|PAX:Passenger';
+    ? `CB:${b.qr_code}|${b.route}|${(b.seats||[]).join(',')}|${b.passenger}`
+    : 'CB:DEMO|Manila-Makati|B3|Passenger';
 
+  // Draw on a canvas using the self-contained encoder
+  const canvas = document.createElement('canvas');
+  qrDiv.appendChild(canvas);
   try {
-    if (typeof QRCode !== 'undefined') {
-      new QRCode(qrDiv, {
-        text: qrText,
-        width: 200,
-        height: 200,
-        colorDark: '#000000',
-        colorLight: '#ffffff',
-        correctLevel: QRCode.CorrectLevel.M
-      });
-    } else {
-      // Fallback: generate QR via Google Charts API
-      const encoded = encodeURIComponent(qrText);
-      qrDiv.innerHTML = `<img src="https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=${encoded}&choe=UTF-8"
-        width="200" height="200" style="border-radius:8px;" alt="QR Code"/>`;
-    }
-  } catch (err) {
-    // Final fallback: show the ticket code in a styled box
-    qrDiv.innerHTML = `<div style="width:200px;height:200px;background:#f5f5f5;display:flex;flex-direction:column;
-      align-items:center;justify-content:center;border-radius:12px;padding:16px;text-align:center;">
-      <div style="font-size:2rem;margin-bottom:8px;">🎫</div>
-      <div style="font-size:.75rem;color:#333;word-break:break-all;font-family:monospace;">${b.qr_code || 'CB-DEMO'}</div>
+    _QR.draw(qrText, canvas, 4, '#000000', '#ffffff');
+    canvas.style.cssText = 'border-radius:8px;display:block;';
+  } catch(e) {
+    // Absolute last resort: ticket code as text
+    qrDiv.innerHTML = `<div style="width:200px;height:200px;background:#f0f0f0;display:flex;flex-direction:column;
+      align-items:center;justify-content:center;border-radius:12px;gap:10px;padding:16px;text-align:center;">
+      <span style="font-size:2.5rem;">🎫</span>
+      <span style="font-size:.72rem;color:#333;word-break:break-all;font-family:monospace;font-weight:700;">${b.qr_code||'CB-DEMO'}</span>
     </div>`;
   }
 }
