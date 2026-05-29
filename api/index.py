@@ -118,9 +118,9 @@ def _ensure_seeded():
             for row in [
                 ("Juan Dela Cruz",  "juan@example.com",     "0912-345-6789", hash_pw("password123"), "passenger"),
                 ("Maria Santos",    "maria@example.com",    "0917-654-3210", hash_pw("password123"), "passenger"),
-                ("Admin User",      "admin@citybus.com",    "0900-000-0001", hash_pw("admin123"),    "admin"),
-                ("Finance User",    "finance@citybus.com",  "0900-000-0002", hash_pw("finance123"),  "finance"),
-                ("Operator User",   "operator@citybus.com", "0900-000-0003", hash_pw("operator123"), "operator"),
+                ("Admin User",      "admin@citybus.com.ph",    "0900-000-0001", hash_pw("ChangeMe@2026!"),  "admin"),
+                ("Finance User",    "finance@citybus.com.ph",  "0900-000-0002", hash_pw("ChangeMe@2026!"), "finance"),
+                ("Operator User",   "operator@citybus.com.ph", "0900-000-0003", hash_pw("ChangeMe@2026!"), "operator"),
             ]:
                 cur.execute(
                     "INSERT INTO users (full_name,email,phone,password_hash,role) VALUES (%s,%s,%s,%s,%s) ON CONFLICT DO NOTHING",
