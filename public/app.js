@@ -57,7 +57,8 @@ function goto(pageId) {
     'admin-routes':       loadRoutesTable,
     'admin-schedules':    loadSchedulesTable,
     'admin-reports':      loadReports,
-    'finance-dashboard':  loadFinanceStats,
+    'admin-dashboard':    () => setTimeout(initAdminCharts, 80),
+    'finance-dashboard':  () => { loadFinanceStats(); setTimeout(initFinanceCharts, 80); },
   };
   if (init[pageId]) init[pageId]();
 }
@@ -342,15 +343,175 @@ function initConfirmationPage() {
 
   const qrDiv = document.getElementById('qrCode');
   qrDiv.innerHTML = '';
-  const qrData = JSON.stringify({ qr: b.qr_code, route: b.route, seats: b.seats, passenger: b.passenger });
+
+  // QR code data — use just the ticket number as text for cleaner QR
+  const qrText = b.qr_code
+    ? `CB-TICKET:${b.qr_code}|ROUTE:${b.route}|SEATS:${(b.seats||[]).join(',')}|PAX:${b.passenger}`
+    : 'CB-TICKET:DEMO|ROUTE:Manila→Makati|SEATS:B3|PAX:Passenger';
+
   try {
-    new QRCode(qrDiv, { text: qrData, width: 200, height: 200, colorDark: '#000', colorLight: '#fff', correctLevel: QRCode.CorrectLevel.M });
-  } catch {
-    qrDiv.innerHTML = `<div style="width:200px;height:200px;background:#f5f5f5;display:flex;align-items:center;
-      justify-content:center;border-radius:8px;font-size:.8rem;text-align:center;padding:12px;">
-      ${b.qr_code || '—'}</div>`;
+    if (typeof QRCode !== 'undefined') {
+      new QRCode(qrDiv, {
+        text: qrText,
+        width: 200,
+        height: 200,
+        colorDark: '#000000',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    } else {
+      // Fallback: generate QR via Google Charts API
+      const encoded = encodeURIComponent(qrText);
+      qrDiv.innerHTML = `<img src="https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=${encoded}&choe=UTF-8"
+        width="200" height="200" style="border-radius:8px;" alt="QR Code"/>`;
+    }
+  } catch (err) {
+    // Final fallback: show the ticket code in a styled box
+    qrDiv.innerHTML = `<div style="width:200px;height:200px;background:#f5f5f5;display:flex;flex-direction:column;
+      align-items:center;justify-content:center;border-radius:12px;padding:16px;text-align:center;">
+      <div style="font-size:2rem;margin-bottom:8px;">🎫</div>
+      <div style="font-size:.75rem;color:#333;word-break:break-all;font-family:monospace;">${b.qr_code || 'CB-DEMO'}</div>
+    </div>`;
   }
 }
+
+/* =======================================================  CHARTS  */
+let _adminBarChart = null;
+let _adminLineChart = null;
+let _finRouteChart = null;
+let _finPaymentChart = null;
+
+function getChartColors() {
+  const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+  return {
+    text: isDark ? '#B0BBCF' : '#3A4560',
+    grid: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)',
+    bar:  '#1B3ED4',
+    line: '#1B3ED4',
+  };
+}
+
+function initAdminCharts() {
+  const c = getChartColors();
+  const barCtx = document.getElementById('adminBarChart');
+  if (!barCtx) return;
+  if (_adminBarChart) { _adminBarChart.destroy(); }
+  _adminBarChart = new Chart(barCtx, {
+    type: 'bar',
+    data: {
+      labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+      datasets:[{ data:[120,150,180,160,200,90,75], backgroundColor: c.bar, borderRadius:5, borderSkipped:false }]
+    },
+    options: {
+      plugins:{ legend:{ display:false } },
+      scales:{
+        x:{ grid:{ color:c.grid }, ticks:{ color:c.text } },
+        y:{ grid:{ color:c.grid }, ticks:{ color:c.text }, beginAtZero:true, max:220 }
+      }
+    }
+  });
+
+  const lineCtx = document.getElementById('adminLineChart');
+  if (!lineCtx) return;
+  if (_adminLineChart) { _adminLineChart.destroy(); }
+  _adminLineChart = new Chart(lineCtx, {
+    type: 'line',
+    data: {
+      labels: ['Jan','Feb','Mar','Apr','May'],
+      datasets:[{
+        data:[120000,130000,142000,162000,158000],
+        borderColor: c.line,
+        backgroundColor: 'rgba(27,62,212,0.08)',
+        pointBackgroundColor: c.line,
+        tension:0.4, fill:true, pointRadius:5
+      }]
+    },
+    options: {
+      plugins:{ legend:{ display:false } },
+      scales:{
+        x:{ grid:{ color:c.grid }, ticks:{ color:c.text } },
+        y:{ grid:{ color:c.grid }, ticks:{ color:c.text, callback: v => '₱'+Math.round(v/1000)+'K' }, beginAtZero:true }
+      }
+    }
+  });
+}
+
+function initFinanceCharts() {
+  const c = getChartColors();
+  const routeCtx = document.getElementById('finRouteChart');
+  if (!routeCtx) return;
+  if (_finRouteChart) { _finRouteChart.destroy(); }
+  _finRouteChart = new Chart(routeCtx, {
+    type: 'bar',
+    data: {
+      labels: ['Route 1','Route 2','Route 3','Route 4','Route 5'],
+      datasets:[{ data:[130000,107000,95000,82000,72000], backgroundColor: c.bar, borderRadius:5, borderSkipped:false }]
+    },
+    options: {
+      plugins:{ legend:{ display:false } },
+      scales:{
+        x:{ grid:{ color:c.grid }, ticks:{ color:c.text } },
+        y:{ grid:{ color:c.grid }, ticks:{ color:c.text, callback: v => '₱'+Math.round(v/1000)+'K' }, beginAtZero:true }
+      }
+    }
+  });
+
+  const payCtx = document.getElementById('finPaymentChart');
+  if (!payCtx) return;
+  if (_finPaymentChart) { _finPaymentChart.destroy(); }
+  _finPaymentChart = new Chart(payCtx, {
+    type: 'pie',
+    data: {
+      labels: ['Credit/Debit Card: 45%','Maya: 20%','GCash: 35%'],
+      datasets:[{
+        data:[45,35,20],
+        backgroundColor:['#1B3ED4','#E04444','#F5A623'],
+        borderWidth: 2,
+        borderColor: c.grid,
+      }]
+    },
+    options: {
+      plugins:{
+        legend:{ position:'right', labels:{ color:c.text, font:{ size:11 }, padding:14 } }
+      }
+    }
+  });
+}
+
+/* =======================================================  OPERATOR MODALS  */
+function showAddBusModal() {
+  showModal('Add New Bus', `
+    <div class="form-group"><label class="form-label">Bus Number</label><input class="form-input" id="newBusNum" placeholder="e.g. Bus #6"/></div>
+    <div class="form-group"><label class="form-label">Route</label><input class="form-input" id="newBusRoute" placeholder="e.g. Route 3: Pasay → Ortigas"/></div>
+    <div class="form-group"><label class="form-label">Driver Name</label><input class="form-input" id="newBusDriver" placeholder="e.g. Maria Santos"/></div>
+    <div class="form-group"><label class="form-label">Capacity</label><input class="form-input" id="newBusCap" type="number" value="44"/></div>`,
+    `<button class="btn btn-primary" onclick="closeModal();showToast('Bus added successfully!','success')">Add Bus</button>`
+  );
+}
+
+function showAssignDriverModal() {
+  showModal('Assign Driver', `
+    <div class="form-group"><label class="form-label">Bus</label>
+      <select class="form-input">
+        <option>Bus #1</option><option>Bus #2</option><option>Bus #3</option><option>Bus #4</option><option>Bus #5</option>
+      </select></div>
+    <div class="form-group"><label class="form-label">Driver Name</label><input class="form-input" placeholder="Driver full name"/></div>
+    <div class="form-group"><label class="form-label">Shift</label>
+      <select class="form-input"><option>Morning (6AM–2PM)</option><option>Afternoon (2PM–10PM)</option><option>Night (10PM–6AM)</option></select></div>`,
+    `<button class="btn btn-primary" onclick="closeModal();showToast('Driver assigned!','success')">Assign</button>`
+  );
+}
+
+function showEmergencyAlert() {
+  showModal('🚨 Emergency Alert', `
+    <div class="form-group"><label class="form-label">Alert Type</label>
+      <select class="form-input"><option>Breakdown</option><option>Accident</option><option>Medical Emergency</option><option>Security Threat</option></select></div>
+    <div class="form-group"><label class="form-label">Bus / Location</label><input class="form-input" placeholder="Bus #3, EDSA near Ortigas"/></div>
+    <div class="form-group"><label class="form-label">Details</label><textarea class="form-input" rows="3" placeholder="Describe the situation…"></textarea></div>`,
+    `<button class="btn btn-danger" onclick="closeModal();showToast('🚨 Emergency alert dispatched!','error',5000)">Send Alert</button>`
+  );
+}
+
 
 /* =======================================================  USER DASHBOARD  */
 async function refreshDashboard() {

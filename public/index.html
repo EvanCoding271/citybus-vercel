@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -639,22 +640,13 @@
         <div class="panel-grid">
           <div class="panel">
             <h2>Daily Bookings</h2>
-            <div class="bar-chart" id="adminBarChart">
-              <div class="bar" style="height:60%"><div class="bar-label">Mon</div></div>
-              <div class="bar" style="height:75%"><div class="bar-label">Tue</div></div>
-              <div class="bar" style="height:87%"><div class="bar-label">Wed</div></div>
-              <div class="bar" style="height:80%"><div class="bar-label">Thu</div></div>
-              <div class="bar" style="height:100%"><div class="bar-label">Fri</div></div>
-              <div class="bar" style="height:48%"><div class="bar-label">Sat</div></div>
-              <div class="bar" style="height:38%"><div class="bar-label">Sun</div></div>
-            </div>
-            <div style="margin-top:28px;" class="list-card">
-              <div class="list-item"><strong>Mon</strong><span>120</span></div>
-              <div class="list-item"><strong>Fri</strong><span>200 🔥</span></div>
-              <div class="list-item"><strong>Sun</strong><span>75</span></div>
-            </div>
+            <canvas id="adminBarChart" height="130"></canvas>
           </div>
           <div>
+            <div class="panel">
+              <h2>Revenue Trend</h2>
+              <canvas id="adminLineChart" height="130"></canvas>
+            </div>
             <div class="panel">
               <h2>Recent Activity</h2>
               <div class="list-card">
@@ -856,48 +848,101 @@
 <!-- ============================== -->
 <div class="page" id="page-finance-dashboard">
   <nav class="topnav">
-    <div class="brand"><div class="brand-icon">🚌</div><span style="font-family:var(--font-head);font-weight:800;">CityBus Finance</span></div>
+    <div class="brand"><div class="brand-icon">🚌</div><span style="font-family:var(--font-head);font-weight:800;">CityBus</span></div>
     <div class="nav-links">
       <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
-      <button class="btn btn-ghost btn-sm" onclick="doLogout()">Logout</button>
+      <button class="btn btn-ghost btn-sm" onclick="doLogout()">→ Logout</button>
     </div>
   </nav>
   <div class="shell">
     <div class="page-top">
-      <div><div class="page-subtitle">Finance Dashboard</div><h1 class="page-title">Revenue &amp; Reporting</h1></div>
+      <div><h1 class="page-title">Finance Dashboard</h1></div>
     </div>
     <div class="stats-grid">
-      <div class="stat-card"><div class="stat-icon" style="background:var(--green);">💵</div><div class="stat-label">Today's Revenue</div><div class="stat-value">₱45,320</div></div>
-      <div class="stat-card"><div class="stat-icon">📈</div><div class="stat-label">This Month</div><div class="stat-value">₱1.23M</div></div>
-      <div class="stat-card"><div class="stat-icon" style="background:#FFB84B;">⏳</div><div class="stat-label">Pending Payments</div><div class="stat-value">₱23,450</div></div>
-      <div class="stat-card"><div class="stat-icon" style="background:var(--primary);">🧾</div><div class="stat-label">Total Transactions</div><div class="stat-value">3,456</div></div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(52,212,154,.2);">💵</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <div class="stat-label" style="margin-bottom:0;">Today's Revenue</div>
+          <span style="font-size:.75rem;font-weight:700;color:var(--green);">+8.2%</span>
+        </div>
+        <div class="stat-value" id="finTodayRev">₱45,320</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(74,127,255,.2);">📈</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <div class="stat-label" style="margin-bottom:0;">This Month</div>
+          <span style="font-size:.75rem;font-weight:700;color:var(--green);">+12.5%</span>
+        </div>
+        <div class="stat-value" id="finMonthRev">₱1,234,500</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(255,179,71,.2);">⏳</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <div class="stat-label" style="margin-bottom:0;">Pending Payments</div>
+          <span style="font-size:.75rem;font-weight:700;color:var(--amber);">15</span>
+        </div>
+        <div class="stat-value" id="finPending">₱23,450</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(255,96,96,.2);">🧾</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <div class="stat-label" style="margin-bottom:0;">Total Transactions</div>
+          <span style="font-size:.75rem;font-weight:700;color:var(--green);">+156</span>
+        </div>
+        <div class="stat-value" id="finTransactions">3,456</div>
+      </div>
     </div>
-    <div class="panel-grid">
+
+    <!-- Charts row -->
+    <div class="panel-grid-2">
       <div class="panel">
         <h2>Revenue by Route</h2>
-        <div class="list-card">
-          <div class="list-item"><strong>Route 1 — Manila → Makati</strong><span>₱120,000</span></div>
-          <div class="list-item"><strong>Route 2 — QC → Pasig</strong><span>₱100,000</span></div>
-          <div class="list-item"><strong>Route 3 — Pasay → MOA</strong><span>₱91,000</span></div>
-          <div class="list-item"><strong>Route 4 — Manila → BGC</strong><span>₱78,000</span></div>
+        <canvas id="finRouteChart" height="200"></canvas>
+      </div>
+      <div class="panel">
+        <h2>Payment Methods</h2>
+        <canvas id="finPaymentChart" height="200"></canvas>
+      </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+        <h2 style="margin-bottom:0;">Recent Transactions</h2>
+        <button class="btn btn-primary btn-sm" onclick="exportCSV()">⬇ Export Report</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Ticket Number</th><th>Passenger</th><th>Amount</th><th>Payment Method</th><th>Date</th><th>Time</th></tr></thead>
+          <tbody>
+            <tr><td><strong>CB1748950234</strong></td><td>Juan Dela Cruz</td><td style="color:var(--accent);font-weight:700;">₱75</td><td>GCash</td><td>2026-05-03</td><td>10:30 AM</td></tr>
+            <tr><td><strong>CB1748950235</strong></td><td>Maria Santos</td><td style="color:var(--accent);font-weight:700;">₱65</td><td>Card</td><td>2026-05-03</td><td>10:25 AM</td></tr>
+            <tr><td><strong>CB1748950236</strong></td><td>Pedro Reyes</td><td style="color:var(--accent);font-weight:700;">₱80</td><td>Maya</td><td>2026-05-03</td><td>10:20 AM</td></tr>
+            <tr><td><strong>CB1748950237</strong></td><td>Ana Garcia</td><td style="color:var(--accent);font-weight:700;">₱70</td><td>Card</td><td>2026-05-03</td><td>10:15 AM</td></tr>
+            <tr><td><strong>CB1748950238</strong></td><td>Jose Fernandez</td><td style="color:var(--accent);font-weight:700;">₱85</td><td>GCash</td><td>2026-05-03</td><td>10:10 AM</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Quick Actions + Financial Summary -->
+    <div class="panel-grid">
+      <div class="panel">
+        <h2>Quick Actions</h2>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <button class="btn btn-primary btn-block" onclick="showToast('Generating report…','info')">📋 Generate Report</button>
+          <button class="btn btn-primary btn-block" onclick="showToast('Loading invoices…','info')">🧾 View Invoices</button>
+          <button class="btn btn-primary btn-block" onclick="showToast('Opening payment settings…','info')">⚙️ Payment Settings</button>
         </div>
       </div>
-      <div>
-        <div class="panel">
-          <h2>Payment Methods</h2>
-          <div class="list-card">
-            <div class="list-item"><strong>Credit / Debit Card</strong><span>45%</span></div>
-            <div class="list-item"><strong>GCash</strong><span>35%</span></div>
-            <div class="list-item"><strong>Maya</strong><span>20%</span></div>
-          </div>
-        </div>
-        <div class="panel">
-          <h2>Financial Summary</h2>
-          <div class="list-card">
-            <div class="list-item"><div><strong>Total Revenue</strong></div><span>₱1,234,500</span></div>
-            <div class="list-item"><div><strong>Total Expenses</strong></div><span>₱456,000</span></div>
-            <div class="list-item"><div><strong>Net Profit</strong></div><span style="color:var(--green);font-weight:800;">₱778,500</span></div>
-          </div>
+      <div class="panel">
+        <h2>Financial Summary</h2>
+        <div class="summary-row"><span class="text-muted">Total Revenue (This Month)</span><span style="font-weight:800;color:var(--amber);">₱1,234,500</span></div>
+        <div class="summary-row"><span class="text-muted">Total Expenses</span><span style="font-weight:800;color:var(--primary);">₱456,000</span></div>
+        <div class="divider"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 0;">
+          <span style="font-weight:700;">Net Profit</span>
+          <span style="font-family:var(--font-head);font-size:1.6rem;font-weight:800;color:var(--accent);">₱778,500</span>
         </div>
       </div>
     </div>
@@ -909,52 +954,249 @@
 <!-- ============================== -->
 <div class="page" id="page-operator-dashboard">
   <nav class="topnav">
-    <div class="brand"><div class="brand-icon">🚌</div><span style="font-family:var(--font-head);font-weight:800;">CityBus Operator</span></div>
+    <div class="brand"><div class="brand-icon">🚌</div><span style="font-family:var(--font-head);font-weight:800;">CityBus</span></div>
     <div class="nav-links">
       <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
-      <button class="btn btn-ghost btn-sm" onclick="doLogout()">Logout</button>
+      <button class="btn btn-ghost btn-sm" onclick="doLogout()">→ Logout</button>
     </div>
   </nav>
   <div class="shell">
     <div class="page-top">
-      <div><div class="page-subtitle">Bus Operator Dashboard</div><h1 class="page-title">Assigned Trips &amp; Boarding</h1></div>
+      <div><h1 class="page-title">Bus Operator Dashboard</h1></div>
     </div>
+
+    <!-- Stat Cards -->
     <div class="stats-grid">
-      <div class="stat-card"><div class="stat-icon">🚌</div><div class="stat-label">Active Routes</div><div class="stat-value">3</div></div>
-      <div class="stat-card"><div class="stat-icon" style="background:#FFB84B;">👨‍✈️</div><div class="stat-label">Driver Assigned</div><div class="stat-value" style="font-size:1.1rem;">Juan Cruz</div></div>
-      <div class="stat-card"><div class="stat-icon" style="background:var(--green);">✅</div><div class="stat-label">Tickets Validated</div><div class="stat-value">24</div></div>
-      <div class="stat-card"><div class="stat-icon" style="background:var(--primary);">📍</div><div class="stat-label">Next Departure</div><div class="stat-value" style="font-size:1.1rem;">08:00 AM</div></div>
+      <div class="stat-card">
+        <div class="stat-icon">🚌</div>
+        <div class="stat-label">Active Buses</div>
+        <div class="stat-value">3</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(255,107,107,.2);">🔧</div>
+        <div class="stat-label">In Maintenance</div>
+        <div class="stat-value">1</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(110,125,150,.2);">🕐</div>
+        <div class="stat-label">Idle Buses</div>
+        <div class="stat-value">1</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(74,127,255,.2);">👥</div>
+        <div class="stat-label">Total Passengers Today</div>
+        <div class="stat-value">100</div>
+      </div>
     </div>
+
+    <!-- Bus Fleet Status -->
+    <div class="panel">
+      <h2>Bus Fleet Status</h2>
+      <div style="display:flex;flex-direction:column;gap:16px;" id="busFleetList">
+
+        <!-- Bus #1 -->
+        <div class="bus-fleet-card">
+          <div class="bus-fleet-header">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div class="bus-fleet-icon">🚌</div>
+              <div>
+                <div style="font-weight:700;font-size:1rem;">Bus #1</div>
+                <div style="font-size:.82rem;color:var(--muted);">Route 1: Quezon City → Makati</div>
+              </div>
+            </div>
+            <span class="badge badge-green">Active</span>
+          </div>
+          <div class="bus-fleet-stats">
+            <div><div class="bus-stat-label">Driver</div><div class="bus-stat-val">Juan Cruz</div></div>
+            <div><div class="bus-stat-label">Passengers</div><div class="bus-stat-val">32 / 44</div></div>
+            <div style="flex:2;">
+              <div class="bus-stat-label">Capacity</div>
+              <div class="progress-bar-wrap mt-1"><div class="progress-bar" style="width:72.7%;background:linear-gradient(90deg,var(--accent),var(--accent-2));"></div></div>
+            </div>
+            <div><div class="bus-stat-label">Next Maintenance</div><div class="bus-stat-val">May 10, 2026</div></div>
+          </div>
+        </div>
+
+        <!-- Bus #2 -->
+        <div class="bus-fleet-card">
+          <div class="bus-fleet-header">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div class="bus-fleet-icon">🚌</div>
+              <div>
+                <div style="font-weight:700;font-size:1rem;">Bus #2</div>
+                <div style="font-size:.82rem;color:var(--muted);">Route 3: Pasay → Ortigas</div>
+              </div>
+            </div>
+            <span class="badge badge-green">Active</span>
+          </div>
+          <div class="bus-fleet-stats">
+            <div><div class="bus-stat-label">Driver</div><div class="bus-stat-val">Maria Santos</div></div>
+            <div><div class="bus-stat-label">Passengers</div><div class="bus-stat-val">28 / 44</div></div>
+            <div style="flex:2;">
+              <div class="bus-stat-label">Capacity</div>
+              <div class="progress-bar-wrap mt-1"><div class="progress-bar" style="width:63.6%;background:linear-gradient(90deg,var(--accent),var(--accent-2));"></div></div>
+            </div>
+            <div><div class="bus-stat-label">Next Maintenance</div><div class="bus-stat-val">May 8, 2026</div></div>
+          </div>
+        </div>
+
+        <!-- Bus #3 -->
+        <div class="bus-fleet-card">
+          <div class="bus-fleet-header">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div class="bus-fleet-icon">🚌</div>
+              <div>
+                <div style="font-weight:700;font-size:1rem;">Bus #3</div>
+                <div style="font-size:.82rem;color:var(--muted);">Route 5: Pasig → MOA</div>
+              </div>
+            </div>
+            <span class="badge badge-green">Active</span>
+          </div>
+          <div class="bus-fleet-stats">
+            <div><div class="bus-stat-label">Driver</div><div class="bus-stat-val">Pedro Reyes</div></div>
+            <div><div class="bus-stat-label">Passengers</div><div class="bus-stat-val">40 / 44</div></div>
+            <div style="flex:2;">
+              <div class="bus-stat-label">Capacity</div>
+              <div class="progress-bar-wrap mt-1"><div class="progress-bar" style="width:90.9%;background:linear-gradient(90deg,var(--accent),var(--accent-2));"></div></div>
+            </div>
+            <div><div class="bus-stat-label">Next Maintenance</div><div class="bus-stat-val">May 15, 2026</div></div>
+          </div>
+        </div>
+
+        <!-- Bus #4 -->
+        <div class="bus-fleet-card">
+          <div class="bus-fleet-header">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div class="bus-fleet-icon">🚌</div>
+              <div>
+                <div style="font-weight:700;font-size:1rem;">Bus #4</div>
+                <div style="font-size:.82rem;color:var(--muted);">Route 2: Manila → BGC</div>
+              </div>
+            </div>
+            <span class="badge badge-red">Maintenance</span>
+          </div>
+          <div class="bus-fleet-stats">
+            <div><div class="bus-stat-label">Driver</div><div class="bus-stat-val">N/A</div></div>
+            <div><div class="bus-stat-label">Passengers</div><div class="bus-stat-val">0 / 44</div></div>
+            <div style="flex:2;">
+              <div class="bus-stat-label">Capacity</div>
+              <div class="progress-bar-wrap mt-1"><div class="progress-bar" style="width:0%;background:var(--muted);"></div></div>
+            </div>
+            <div><div class="bus-stat-label">Next Maintenance</div><div class="bus-stat-val" style="color:var(--primary);">In Progress</div></div>
+          </div>
+        </div>
+
+        <!-- Bus #5 -->
+        <div class="bus-fleet-card">
+          <div class="bus-fleet-header">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div class="bus-fleet-icon">🚌</div>
+              <div>
+                <div style="font-weight:700;font-size:1rem;">Bus #5</div>
+                <div style="font-size:.82rem;color:var(--muted);">Route 7: Taguig → Manila</div>
+              </div>
+            </div>
+            <span class="badge badge-gray">Idle</span>
+          </div>
+          <div class="bus-fleet-stats">
+            <div><div class="bus-stat-label">Driver</div><div class="bus-stat-val">Ana Garcia</div></div>
+            <div><div class="bus-stat-label">Passengers</div><div class="bus-stat-val">0 / 44</div></div>
+            <div style="flex:2;">
+              <div class="bus-stat-label">Capacity</div>
+              <div class="progress-bar-wrap mt-1"><div class="progress-bar" style="width:0%;background:var(--muted);"></div></div>
+            </div>
+            <div><div class="bus-stat-label">Next Maintenance</div><div class="bus-stat-val">May 12, 2026</div></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Maintenance Alerts + Quick Actions -->
     <div class="panel-grid">
       <div class="panel">
-        <h2>Assigned Trips</h2>
-        <div class="list-card">
-          <div class="list-item"><div><strong>Route 1 — Makati → Manila</strong><small>Bus #1 · 08:00 AM</small></div><span class="badge badge-green">Active</span></div>
-          <div class="list-item"><div><strong>Route 4 — Pasig → Ortigas</strong><small>Bus #4 · 10:30 AM</small></div><span class="badge badge-green">Active</span></div>
-          <div class="list-item"><div><strong>Route 7 — BGC → Quezon City</strong><small>Bus #7 · 02:00 PM</small></div><span class="badge badge-gray">Idle</span></div>
+        <h2>Maintenance Alerts</h2>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <span style="font-size:1.1rem;">⚠️</span>
+              <div>
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                  <strong>Bus #23</strong>
+                  <span class="badge" style="background:rgba(255,179,71,.15);color:var(--amber);border:1px solid rgba(255,179,71,.2);">MEDIUM</span>
+                </div>
+                <div style="font-size:.82rem;color:var(--muted);">Scheduled Maintenance<br>Due: May 10, 2026</div>
+              </div>
+            </div>
+            <button class="btn btn-accent btn-sm" onclick="showToast('Maintenance scheduled for Bus #23','success')">Schedule</button>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <span style="font-size:1.1rem;">⚠️</span>
+              <div>
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                  <strong>Bus #45</strong>
+                  <span class="badge badge-red">HIGH</span>
+                </div>
+                <div style="font-size:.82rem;color:var(--muted);">Tire Check Required<br>Due: May 8, 2026</div>
+              </div>
+            </div>
+            <button class="btn btn-accent btn-sm" onclick="showToast('Urgent maintenance scheduled for Bus #45','success')">Schedule</button>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <span style="font-size:1.1rem;">⚠️</span>
+              <div>
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                  <strong>Bus #12</strong>
+                  <span class="badge badge-blue">LOW</span>
+                </div>
+                <div style="font-size:.82rem;color:var(--muted);">Oil Change<br>Due: May 15, 2026</div>
+              </div>
+            </div>
+            <button class="btn btn-accent btn-sm" onclick="showToast('Maintenance scheduled for Bus #12','success')">Schedule</button>
+          </div>
         </div>
       </div>
+
       <div class="panel">
-        <h2>Boarding Validation</h2>
-        <div class="list-card">
-          <div class="list-item">
-            <div><strong>Scan QR Ticket</strong><small>One-time boarding validation</small></div>
-            <button class="btn btn-primary btn-sm" onclick="showQRScanner()">📷 Scan</button>
+        <h2>Quick Actions</h2>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
+          <button class="btn btn-primary btn-block" onclick="showAddBusModal()">🚌 Add New Bus</button>
+          <button class="btn btn-primary btn-block" onclick="showToast('Schedule maintenance opened','info')">🔧 Schedule Maintenance</button>
+          <button class="btn btn-primary btn-block" onclick="showAssignDriverModal()">👤 Assign Driver</button>
+          <button class="btn btn-primary btn-block" onclick="showEmergencyAlert()">🚨 Emergency Alert</button>
+        </div>
+
+        <!-- Boarding Validation -->
+        <div style="padding:16px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <div><strong>Scan QR Ticket</strong><div style="font-size:.8rem;color:var(--muted);">One-time boarding validation</div></div>
+            <button class="btn btn-accent btn-sm" onclick="showQRScanner()">📷 Scan</button>
           </div>
-          <div class="list-item">
-            <div><strong>Manual Ticket Check</strong><small>Enter ticket number</small></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div><strong>Manual Ticket Check</strong><div style="font-size:.8rem;color:var(--muted);">Enter ticket number</div></div>
             <button class="btn btn-ghost btn-sm" onclick="showManualCheck()">🔍 Verify</button>
           </div>
-        </div>
-        <div id="manualCheckArea" style="display:none;" class="mt-2">
-          <div class="form-group">
-            <label class="form-label">Ticket Number</label>
-            <input class="form-input" type="text" placeholder="CB1748950234" id="checkTicketNum"/>
+          <div id="manualCheckArea" style="display:none;margin-top:12px;">
+            <div class="form-group">
+              <label class="form-label">Ticket Number</label>
+              <input class="form-input" type="text" placeholder="CB1748950234" id="checkTicketNum"/>
+            </div>
+            <button class="btn btn-success btn-sm" onclick="verifyTicket()">Verify</button>
           </div>
-          <button class="btn btn-success btn-sm" onclick="verifyTicket()">Verify</button>
+        </div>
+
+        <div style="padding:14px 16px;background:rgba(52,212,154,.08);border:1px solid rgba(52,212,154,.2);border-radius:var(--radius);display:flex;align-items:center;gap:10px;">
+          <span style="color:var(--green);font-size:1.1rem;">✅</span>
+          <div>
+            <div style="font-weight:700;color:var(--green);font-size:.9rem;">All Systems Operational</div>
+            <div style="font-size:.78rem;color:var(--muted);">No critical alerts at this time</div>
+          </div>
         </div>
       </div>
     </div>
+
   </div>
 </div>
 
