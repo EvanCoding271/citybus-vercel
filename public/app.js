@@ -492,6 +492,7 @@ function initConfirmationPage() {
 
   const qrDiv = document.getElementById('qrCode');
   qrDiv.innerHTML = '';
+  qrDiv.style.cssText = 'display:flex;align-items:center;justify-content:center;overflow:hidden;';
 
   const qrText = b.qr_code
     ? `CB:${b.qr_code}|${b.route}|${(b.seats||[]).join(',')}|${b.passenger}`
@@ -502,7 +503,7 @@ function initConfirmationPage() {
   qrDiv.appendChild(canvas);
   try {
     _QR.draw(qrText, canvas, 4, '#000000', '#ffffff');
-    canvas.style.cssText = 'border-radius:8px;display:block;';
+    canvas.style.cssText = 'border-radius:8px;display:block;max-width:100%;max-height:100%;width:auto;height:auto;margin:auto;';
   } catch(e) {
     // Absolute last resort: ticket code as text
     qrDiv.innerHTML = `<div style="width:200px;height:200px;background:#f0f0f0;display:flex;flex-direction:column;
