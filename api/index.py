@@ -139,12 +139,19 @@ def _ensure_seeded():
                     row
                 )
 
-            # Routes
+            # Routes — 10 real Metro Manila point-to-point bus routes
             for row in [
-                ("Route 1","Manila",     "Makati", 65,"active"),
-                ("Route 2","Quezon City","Ortigas",72,"active"),
-                ("Route 3","Pasay",      "MOA",    55,"active"),
-                ("Route 4","Manila",     "BGC",    80,"inactive"),
+                ("Route 1 - EDSA Carousel",       "Caloocan (Monumento)",                    "Parañaque (PITX)",              120, "active"),
+                ("Route 2 - Angono–Quiapo",        "Angono (SM Center Angono)",               "Manila (Quiapo Church)",         95, "active"),
+                ("Route 3 - Antipolo–Quiapo",      "Antipolo (Robinsons Antipolo)",           "Manila (Quiapo Church)",        100, "active"),
+                ("Route 4 - PITX–BGC",             "Taguig (Venice Grand Canal Mall)",        "Parañaque (PITX)",               75, "active"),
+                ("Route 5 - Sta. Maria–PITX",      "Santa Maria (Caypombo)",                  "Parañaque (PITX)",              145, "active"),
+                ("Route 6 - Sapang Palay–PITX",    "San Jose del Monte (Sapang Palay)",       "Parañaque (PITX)",              175, "active"),
+                ("Route 6A - Sapang Palay–NIA",    "San Jose del Monte (Sapang Palay)",       "Quezon City (Eton Centris)",    130, "active"),
+                ("Route 7 - Fairview–PITX",        "Quezon City (SM City Fairview)",          "Parañaque (PITX)",              150, "active"),
+                ("Route 8 - Angat–Divisoria",      "Angat (Angat Public Market)",             "Manila (Divisoria)",            160, "active"),
+                ("Route 9 - Angat–Monumento",      "Angat (Angat Public Market)",             "Caloocan (Monumento)",          130, "active"),
+                ("Route 10 - Ayala–Alabang",       "Makati (One Ayala)",                      "Muntinlupa (Vista Terminal)",    85, "active"),
             ]:
                 cur.execute(
                     "INSERT INTO routes (name,origin,destination,base_fare,status) VALUES (%s,%s,%s,%s,%s) ON CONFLICT DO NOTHING",
@@ -156,9 +163,9 @@ def _ensure_seeded():
             b1 = cur.fetchone()
             cur.execute("SELECT id FROM buses WHERE plate_number='XYZ-5678'")
             b2 = cur.fetchone()
-            cur.execute("SELECT id FROM routes WHERE name='Route 1'")
+            cur.execute("SELECT id FROM routes WHERE name='Route 1 - EDSA Carousel'")
             r1 = cur.fetchone()
-            cur.execute("SELECT id FROM routes WHERE name='Route 2'")
+            cur.execute("SELECT id FROM routes WHERE name='Route 2 - Angono–Quiapo'")
             r2 = cur.fetchone()
 
             if b1 and r1:
