@@ -717,3 +717,13 @@ function setBtnLoading(sel, loading) {
   }
   applyTheme(App.theme);
 })();
+
+/* =======================================================  PORTAL GATE  */
+// Admin portal is hidden — only accessible via ?portal=staff
+// Share this URL only with staff: citybus.vercel.app/?portal=staff
+(function () {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('portal') === 'staff') {
+    goto('employee-login');
+  }
+}());
