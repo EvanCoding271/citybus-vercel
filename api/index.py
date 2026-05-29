@@ -349,7 +349,7 @@ def register(body: RegisterIn):
             "INSERT INTO users (full_name,email,phone,password_hash,role) "
             "VALUES (%s,%s,%s,%s,'passenger') "
             "RETURNING id,full_name,email,phone,role",
-            (body.full_name, body.email, body.phone or "", hash_pw(body.password))
+            (body.full_name, body.email, body.phone.strip() or None, hash_pw(body.password))
         )
         user = dict(cur.fetchone())
         conn.commit()
@@ -430,10 +430,11 @@ def create_user(body: CreateUserIn, u=Depends(require("admin"))):
         cur.execute("SELECT id FROM users WHERE email=%s", (body.email,))
         if cur.fetchone():
             raise HTTPException(400, "Email already exists")
+        phone = body.phone.strip() if body.phone and body.phone.strip() else None
         cur.execute(
             "INSERT INTO users (full_name,email,phone,password_hash,role) "
             "VALUES (%s,%s,%s,%s,%s) RETURNING id,full_name,email,phone,role",
-            (body.full_name, body.email, body.phone, hash_pw(body.password or "changeme123"), body.role)
+            (body.full_name, body.email, phone, hash_pw(body.password or "changeme123"), body.role)
         )
         row = dict(cur.fetchone())
         conn.commit()
